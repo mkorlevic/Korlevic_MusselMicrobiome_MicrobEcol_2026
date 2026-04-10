@@ -1,0 +1,33 @@
+# This is the procedure to obtain the quality of sequences throughout the analysis.
+
+# Define mothur logfile name and location
+set.logfile(name=$MOTH/summary.txt)
+
+# Summarise reference sequences
+summary.seqs(fasta=$REFS/silva.pcr.align, processors=$NSLOTS)
+summary.seqs(fasta=$REFS/silva.pcr.unique.align)
+
+# Summarise sequences after make.contigs()
+summary.seqs(fasta=$MOTH/raw.trim.contigs.fasta, count=$MOTH/raw.contigs.count_table)
+
+# Summarise sequences after #1 screen.seqs()
+summary.seqs(fasta=$MOTH/raw.trim.contigs.good.fasta, count=$MOTH/raw.contigs.good.count_table)
+
+# Summarise sequences after #1 unique.seqs()
+summary.seqs(fasta=$MOTH/raw.trim.contigs.good.unique.fasta, count=$MOTH/raw.trim.contigs.good.count_table)
+
+# Summarise sequences after align.seqs()
+summary.seqs(fasta=$MOTH/raw.trim.contigs.good.unique.align, count=$MOTH/raw.trim.contigs.good.count_table)
+
+# Summarise sequences after #2 screen.seqs()
+summary.seqs(fasta=$MOTH/raw.trim.contigs.good.unique.good.align, count=$MOTH/raw.trim.contigs.good.good.count_table)
+
+# Summarise sequences after filter.seqs() and #2 unique.seqs()
+summary.seqs(fasta=$MOTH/raw.trim.contigs.good.unique.good.filter.unique.fasta, count=$MOTH/raw.trim.contigs.good.unique.good.filter.count_table)
+
+# Summarise sequences after pre.cluster()
+summary.seqs(fasta=$MOTH/raw.trim.contigs.good.unique.good.filter.unique.precluster.fasta, count=$MOTH/raw.trim.contigs.good.unique.good.filter.unique.precluster.count_table)
+
+# Summarise sequences after chimera.vsearch()
+summary.seqs(fasta=$MOTH/raw.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.fasta, count=$MOTH/raw.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.count_table)
+

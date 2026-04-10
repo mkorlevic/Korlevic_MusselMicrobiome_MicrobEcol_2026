@@ -1,0 +1,322 @@
+---
+title: "**Supplementary material**"
+subtitle: "**Resident and transient microbial taxa in the gill microbiome of the mussel *Mytilus galloprovincialis***"
+documentclass: article
+geometry: margin = 1.0in
+fontsize: 12 pt
+bibliography: ["references.bib", "packages.bib"]
+csl: citation_style.csl # Get themes at https://github.com/citation-style-language/styles
+link-citations: yes
+output:
+  bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+      before_body: before_body_supplementary.tex
+    keep_tex: true
+    latex_engine: pdflatex
+    toc: false
+    number_sections: false
+---
+
+```{r, knitr_settings, eval = TRUE, echo = FALSE, cache = FALSE}
+
+################################################################################
+# Change the default values of chunk options
+################################################################################
+
+opts_chunk$set("tidy" = TRUE)
+opts_chunk$set("echo" = FALSE)
+opts_chunk$set("eval" = TRUE)
+opts_chunk$set("warning" = FALSE)
+opts_chunk$set("cache" = TRUE)
+opts_chunk$set("message" = FALSE)
+
+################################################################################
+# Define a custom hook function to format output from inline R expressions
+################################################################################
+
+# Define a custom hook function to format output from inline R expressions
+# (This enables number formatting during inline R code execution.)
+inline_hook <- function(x){
+	
+  print(x)
+  
+	if(is.list(x)){
+		x <- unlist(x)
+	}
+  
+	if(is.numeric(x)){
+		if(abs(x - round(x)) < .Machine$double.eps ^ 0.5){
+			paste(format(x, trim = TRUE, big.mark = ',', digits = 0, scientific = FALSE))
+		} else {
+			paste(format(x, trim = TRUE, big.mark = ',', digits = 1, nsmall = 1, scientific = FALSE))
+		}
+	} else {
+    	paste(x)
+	  }
+  }
+
+# Register the custom inline hook
+knitr::knit_hooks$set(inline = inline_hook)
+
+```
+\vspace{\fill}
+
+Marino Korlević^1\*^, Marsej Markovski^1^, Damir Kapetanović^2^, Irena Vardić Smrzlić^2^, Karla Orlić^2^, Jakša Bolotin^3^, Valter Kožul^3^, Svjetlana Bobanović-Ćolić^3^, Vedrana Nerlović^4^, and Lorena Perić^2\*^
+
+1. Centre for Marine Research, Ruđer Bošković Institute, Croatia
+2. Division for Marine and Environmental Research, Ruđer Bošković Institute, Croatia
+3. Institute for Marine and Coastal Research, University of Dubrovnik, Croatia
+4. Faculty of Marine Sciences, University of Split, Croatia
+
+^\*^To whom correspondence should be addressed:  
+Marino Korlević  
+G. Paliaga 5, 52210 Rovinj, Croatia  
+e-mail: [marino.korlevic\@irb.hr](mailto:marino.korlevic@irb.hr){.email}  
+ORCID iD: [0000-0001-5680-3556](https://orcid.org/0000-0001-5680-3556)
+
+Lorena Perić  
+Bijenička cesta 54, 10000 Zagreb, Croatia  
+e-mail: [lorena.peric@irb.hr](mailto:lorena.peric@irb.hr){.email}  
+ORCID iD: [0000-0001-6899-9605](https://orcid.org/0000-0001-6899-9605)
+
+```{=latex}
+
+% Ensure that numbers are typeset in text mode
+\sisetup{mode=text}
+
+% Set the size of indentation to 24 pt
+\setlength\parindent{24pt}
+
+% Start a new page
+\newpage
+
+```
+
+```{=latex}
+
+% Begin landscape orientation
+\blandscape
+
+```
+## Supplementary figures
+
+```{r, rarefaction-a, out.width = "85%", fig.align = "center", fig.cap = "(ref:rarefaction-a)", fig.pos = "H"}
+
+include_graphics(path = "../results/figures/rarefaction_a.jpg")
+
+```
+(ref:rarefaction-a) Rarefaction curves of seawater and sediment microbial communities sampled in Lim Bay and Mali Ston Bay from July 2020 to May 2021. In each bay, samples were collected from one aquaculture site and one control site
+
+```{=latex}
+
+% End landscape orientation
+\elandscape
+
+```
+
+```{r, rarefaction-b, out.width = "85%", fig.align = "center", fig.cap = "(ref:rarefaction-b)", fig.pos = "H"}
+
+include_graphics(path = "../results/figures/rarefaction_b.jpg")
+
+```
+(ref:rarefaction-b) Rarefaction curves of microbial communities associated with the gills of the mussel *M. galloprovincialis* (gill microbiome). Mussels were collected in Lim Bay and Mali Ston Bay from July 2020 to May 2021. The numbers in the legend correspond to the index of each individual mussel
+
+```{r, taxonomy-seawater-sediment-phylum, out.width = "80%", fig.align = "center", fig.cap = "(ref:taxonomy-seawater-sediment-phylum)", fig.pos = "H"}
+
+include_graphics(path = "../results/figures/taxonomy_seawater_sediment_phylum.jpg")
+
+```
+(ref:taxonomy-seawater-sediment-phylum) Taxonomic classification and relative contribution of the most abundant (\qty{>=3}{\percent}) bacterial and archaeal sequences in the seawater and sediment of Lim Bay and Mali Ston Bay. In each bay, samples were collected from one aquaculture site and one control site between July 2020 and May 2021. "No Relative" indicates sequences that could not be classified into any taxon, while "NR" (No Relative) next to the name of a taxonomic group refers to sequences that could not be assigned to any known taxon within that group. "NA" (Not Available) indicates samples that were not successfully analysed
+
+```{r, taxonomy-gills-phylum, out.width = "80%", fig.align = "center", fig.cap = "(ref:taxonomy-gills-phylum)", fig.pos = "H"}
+
+include_graphics(path = "../results/figures/taxonomy_gills_phylum.jpg")
+
+```
+(ref:taxonomy-gills-phylum) Taxonomic classification and relative contribution of the most abundant (\qty{>=3}{\percent}) bacterial and archaeal sequences from the gills of the mussel *M. galloprovincialis* (gill microbiome). From July 2020 to May 2021, 10 mussels were collected per sampling month in Lim Bay and Mali Ston Bay. Each bar (individual index) represents an individual mussel. "No Relative" indicates sequences that could not be classified into any taxon, while "NR" (No Relative) next to the name of a taxonomic group refers to sequences that could not be assigned to any known taxon within that group. "NA" (Not Available) indicates samples that were not successfully analysed
+
+## Supplementary tables
+
+```{=latex}
+
+% Begin the singlespace environment so that
+% rows in the longtable are single spaced
+\begin{singlespace}
+
+```
+(ref:nseq-notus-seawater-sediment) Sample ID, sampling date, location, and site, and the no. of sequences and OTUs for each sample from the seawater and sediment environment. The no. of sequences and OTUs was calculated after excluding sequences without known relatives, as well as eukaryotic, mitochondrial, and chloroplast sequences
+
+```{r, nseq-notus-seawater-sediment, tab.cap = "(ref:nseq-notus-seawater-sediment)"}
+
+# Load OTU/sample data
+shared <- read_tsv(file = "data/mothur/raw.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.opti_mcc.shared")
+
+# Calculate the number of sequences and OTUs in each sample
+nseq_notus <- shared %>%
+  # Sum the number of sequences in each sample
+  mutate(nseq = rowSums(x = select(., starts_with(match = "Otu")))) %>%
+  # Sum the number of OTUs in each sample
+  mutate(notus = rowSums(x = select(., starts_with(match = "Otu")) != 0))
+
+# Ensure that the column "Group" is of data type character
+nseq_notus <- nseq_notus %>%
+  mutate(Group = as.character(Group))
+
+# Load metadata
+metadata <- read_tsv(file = "data/raw/metadata.tsv")
+
+# Customise metadata using the custom function
+metadata <- format_labels(x = metadata)
+
+# Join metadata with the number of sequences and OTUs
+metadata_nseq_notus <- inner_join(x = metadata,
+                                  y = nseq_notus,
+                                  by = c("id" = "Group"))
+
+# Format data in the table 
+metadata_nseq_notus <- metadata_nseq_notus %>%
+  # Format the number of sequences by using a comma
+  # as a thousand separator
+  mutate(nseq = format(x = nseq, big.mark = ","),
+         # Format the number of OTUs by using a comma
+         # as a thousand separator
+         notus = format(x = notus, big.mark = ","))
+
+# Select samples to be added to the table
+table <- metadata_nseq_notus %>%
+  filter(environment == "Seawater" |
+         environment == "Sediment")
+  
+# Select the columns to be added to the table
+table <- table %>%
+  select(id, environment, date, location,
+         site, nseq, notus)
+
+# Create table
+kable(x = table, format = "latex",
+      col.names = c("Sample ID", "Environment", "Date",
+                    "Location", "Site", "No. of Sequences",
+                    "No. of OTUs"),
+      align = "c",
+      caption = opts_current$get("tab.cap"), escape = FALSE, booktabs = TRUE,
+      linesep = "", longtable = TRUE) %>%
+  # Customise the table appearance
+  kable_styling(latex_options = c("hold_position", "repeat_header"),
+                font_size = 10) %>%
+  # Customise the table header
+  row_spec(row = 0, bold = TRUE) %>%
+  # Customise the width of the columns
+  column_spec(column = c(6 : 7), width = "\\\\textwidth / 11",
+              latex_valign = "m") %>%
+  # Collapse rows containing the same values based on
+  # the entries in the fourth column
+  collapse_rows(columns = c(2 : 4),
+                valign = "middle", latex_hline = "major",
+                target = 4)
+
+```
+\newpage
+
+(ref:nseq-notus-gills) Sample ID, sampling date and location, each individual ID and index, and the no. of sequences and OTUs for each gill sample of the mussel *M. galloprovincialis* (gill microbiome). The no. of sequences and OTUs was calculated after excluding sequences without known relatives, as well as eukaryotic, mitochondrial, and chloroplast sequences
+
+```{r, nseq-notus-gills, tab.cap = "(ref:nseq-notus-gills)"}
+
+# Select samples to be added to the table
+table <- metadata_nseq_notus %>%
+  filter(environment == "Gills")
+  
+# Select the columns to be added to the table
+table <- table %>%
+  select(id, date, location,
+         individual_id, individual_index,
+         nseq, notus)
+
+# Create table
+kable(x = table, format = "latex",
+      col.names = c("Sample ID", "Date", "Location",
+                    "Individual ID", "Individual Index",
+                    "No. of Sequences", "No. of OTUs"),
+      align = "c",
+      caption = opts_current$get("tab.cap"), escape = FALSE, booktabs = TRUE,
+      linesep = "", longtable = TRUE) %>%
+  # Customise the table appearance
+  kable_styling(latex_options = c("hold_position", "repeat_header"),
+                font_size = 10) %>%
+  # Customise the table header
+  row_spec(row = 0, bold = TRUE) %>%
+  # Customise the width of the columns
+  column_spec(column = c(4 : 7), width = "\\\\textwidth / 11",
+              latex_valign = "m") %>%
+  # Collapse rows containing the same values based on
+  # the entries in the fourth column
+  collapse_rows(columns = c(2 : 3),
+                valign = "middle", latex_hline = "major")
+
+```
+\newpage
+
+(ref:kruskal-wallis) The statistics of richness estimator and diversity index parameters of microbial communities from different environments and sites. Parameters were tested with the Kruskal-Wallis *H* test followed by pairwise comparisons using the Mann-Whitney *U* test. Bonferroni correction was applied to address the problem of multiple comparisons
+
+```{r, kruskal-wallis, tab.cap = "(ref:kruskal-wallis)"}
+
+# Load statistical data
+load(file = "results/numerical/kruskal_wallis.Rdata")
+
+# Select the columns to be added to the table
+kruskal_wallis <- kruskal_wallis$kruskal_wallis_tibble %>%
+  select(parameter, kw_H, kw_df, kw_p_label,
+         pairwise_mw, mw_p_label)
+
+# Format data in the table
+kruskal_wallis <- kruskal_wallis %>%
+  # Replace parameter abbreviations with full names
+  mutate(parameter = case_when(
+    parameter == "S.obs"      ~ "Observed No. of OTUs",
+    parameter == "S.chao1"    ~ "Chao1",
+    parameter == "S.ACE"      ~ "ACE",
+    parameter == "eshannon"   ~ "Exponential Shannon",
+    parameter == "invsimpson" ~ "Inverse Simpson",
+    TRUE                      ~ parameter)) %>%
+  # Format the Kruskal-Wallis H values to one decimal place
+  mutate(kw_H = format(x = kw_H, digits = 1, nsmall = 1))
+
+# Create table
+kable(x = kruskal_wallis, format = "latex",
+      col.names = c("Parameter", "\\textit{H}", "\\textit{df}",
+                    "\\textit{p}", "Comparisons Between Environments and Sites",
+                    "\\textit{p}"),
+      align = "c",
+      caption = opts_current$get("tab.cap"), escape = FALSE, booktabs = TRUE,
+      linesep = "", longtable = TRUE) %>%
+  # Add a header row above the current header
+  add_header_above(header = c("", "Kruskal-Wallis \\\\textit{H} test" = 3,
+                              "Mann-Whitney \\\\textit{U} test" = 2),
+                   bold = TRUE, escape = FALSE) %>%
+  # Customise the table appearance
+  kable_styling(latex_options = c("hold_position", "repeat_header"),
+                font_size = 10) %>%
+  # Customise the table header
+  row_spec(row = 0, bold = TRUE) %>%
+  # Customise the width of the columns
+  column_spec(column = 1, width = "\\\\textwidth / 8",
+              latex_valign = "m") %>%
+  column_spec(column = c(2 : 4, 6), width = "\\\\textwidth / 16",
+              latex_valign = "m") %>%
+  column_spec(column = 5, width = "\\\\textwidth / \\\\real{2.3}",
+              latex_valign = "m") %>%
+  # Collapse rows containing the same values based on
+  # the entries in the first column
+  collapse_rows(columns = c(1 : 4),
+                valign = "middle", latex_hline = "major",
+                target = 1)
+
+```
+
+```{=latex}
+
+% End the singlespace environment
+\end{singlespace}
+
+```
+

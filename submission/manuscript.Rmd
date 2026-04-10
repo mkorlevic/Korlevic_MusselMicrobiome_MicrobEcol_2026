@@ -1,0 +1,1484 @@
+---
+title: "**Resident and transient microbial taxa in the gill microbiome of the mussel *Mytilus galloprovincialis***"
+documentclass: article
+geometry: margin = 1.0in
+fontsize: 12 pt
+bibliography: ["references.bib", "packages.bib"]
+csl: citation_style.csl # Get themes at https://github.com/citation-style-language/styles
+link-citations: yes
+output:
+  bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+      before_body: before_body_manuscript.tex
+    keep_tex: true
+    latex_engine: pdflatex
+    toc: false
+    number_sections: false
+---
+
+```{r, knitr_settings, eval = TRUE, echo = FALSE, cache = FALSE, results = "hide"}
+
+################################################################################
+# Change the default values of chunk options
+################################################################################
+
+opts_chunk$set("tidy" = TRUE)
+opts_chunk$set("echo" = FALSE)
+opts_chunk$set("eval" = TRUE)
+opts_chunk$set("warning" = FALSE)
+opts_chunk$set("cache" = TRUE)
+opts_chunk$set("message" = FALSE)
+
+################################################################################
+# Define a custom hook function to format output from inline R expressions
+################################################################################
+
+# Define a custom hook function to format output from inline R expressions
+# (This enables number formatting during inline R code execution.)
+inline_hook <- function(x){
+	
+  print(x)
+  
+	if(is.list(x)){
+		x <- unlist(x)
+	}
+  
+	if(is.numeric(x)){
+		if(abs(x - round(x)) < .Machine$double.eps ^ 0.5){
+			paste(format(x, trim = TRUE, big.mark = ',', digits = NULL, scientific = FALSE))
+		} else {
+			paste(format(x, trim = TRUE, big.mark = ',', digits = 1, nsmall = 1, scientific = FALSE))
+		}
+	} else {
+    	paste(x)
+	  }
+  }
+
+# Register the custom inline hook
+knitr::knit_hooks$set(inline = inline_hook)
+
+################################################################################
+# Create and write bib entries for R and currently loaded R packages
+################################################################################
+
+# Obtain package names and versions using custom function
+packages <- r_package_version(file_path = ".Rprofile")
+
+# Remove package stats
+packages <- packages %>%
+  filter(name != "stats")
+
+# Create and write bib entries for R and currently loaded R packages
+# (add the base package to the list of packages so that R can be cited)
+write_bib(x = c("base", packages$name), file = "submission/packages.bib")
+
+# Repair known issues with capitalisation in titles
+# Omit capitalisation after colons
+system("sed -i 's/^\\(  title = {.*: \\)\\([^ }]*\\)\\(.*\\)/\\1{\\l\\2}\\3/g' submission/packages.bib")
+# Capitalise the letter "R" when it indicates the R programming language
+system("sed -i 's/^\\(  title = {.*\\) R\\([ }:,]\\)\\(.*\\)/\\1 {R}\\2\\3/g' submission/packages.bib")
+# Do not capitalise R package names when they are the first word in the title
+# and are followed by a colon
+system("sed -i 's/^\\(  title = {\\)\\(knitr\\|rmarkdown\\|bookdown\\|tinytex\\|vegan\\|taxonomizr\\|ggpattern\\|cowplot\\|rlang\\|ggsignif\\|tidyverse\\|legendry\\|cld\\|ggnewscale\\|grid\\|vctrs\\|gtable\\|plyr\\|lazyeval\\|ggforce\\)\\(:.*\\)/\\1{\\2}\\3/g' submission/packages.bib")
+# Preserve the capitalisation of specific words
+system("sed -i 's/^\\(  title = {.*\\)Markdown\\(.*\\)/\\1{Markdown}\\2/g' submission/packages.bib")
+system("sed -i 's/^\\(  title = {.*\\)TeX Live\\(.*\\)/\\1{TeX Live}\\2/g' submission/packages.bib")
+system("sed -i 's/^\\(  title = {.*\\)Compact Letter Display\\(.*\\)/\\1{Compact Letter Display}\\2/g' submission/packages.bib")
+system("sed -i 's/^\\(  title = {.*\\)colorBrewer\\(.*\\)/\\1ColorBrewer\\2/g' submission/packages.bib")
+# When citing book chapters, make the title of the book sentence case
+system("sed -i 's/^  booktitle = {Implementing Reproducible Computational Research}/  booktitle = {{Implementing reproducible computational research}}/g' submission/packages.bib")
+
+# Add journal abbreviations
+system("sed -i 's/^\\(  journal = {Journal of Open Source Software},\\)/\\1\\
+  shortjournal = {J. Open Source Softw.},/g' submission/packages.bib")
+system("sed -i 's/^\\(  journal = {Journal of Statistical Software},\\)/\\1\\
+  shortjournal = {J. Stat. Softw.},/g' submission/packages.bib")
+
+# Remove urls
+system("sed -i '/^  url =/d' submission/packages.bib")
+
+################################################################################
+# Retrieve citation keys for the loaded R packages
+################################################################################
+
+# Remove packages vegan and tidyverse as they are cited separately
+packages <- packages %>%
+  filter(name != "vegan") %>%
+  filter(name != "tidyverse")
+
+# Retrieve bib entries for the R packages
+bib_entries <- write_bib(x = packages$name)
+
+# Unlist the bib entries
+bib_entries <- unlist(x = bib_entries)
+
+# Retrieve the citation keys for loaded R packages
+citation_keys <- tibble(citation_key = bib_entries) %>%
+  # Filter rows containing citation keys
+  filter(str_detect(string = citation_key, pattern = "^@")) %>%
+  # Extract the citation key from the string
+  mutate(citation_key = str_replace(string = citation_key, pattern = "@.*\\{(.*),", replacement = "@\\1"))
+
+```
+
+```{bash cache = FALSE}
+
+# Bash command to replace the language defined as English with undefined
+# The CSL capitalises words after a colon for English titles if the following
+# text is a complete sentence. To prevent this, the language
+# is set to undefined. Ensure all entries in submission/references.bib have
+# a langid field set to langid = {English}, langid = {english},
+# langid = {en}, or another language. In British English, capitalisation
+# occurs only for proper nouns or acronyms after a colon.
+sed -i "s/langid = {\\(English\\|english\\|en\\)}/langid = {undefined}/" submission/references.bib
+
+# Bash command to replace the Unicode γ (Greek gamma) wrapped in \mkbibemph{...}
+# with LaTeX inline math \gamma
+sed -i "s/\\\mkbibemph{γ}/$\\\gamma$/" submission/references.bib
+
+```
+
+```{r, input}
+
+################################################################################
+# OTU/sample
+################################################################################
+
+# Load OTU/sample data
+shared <- read_tsv(file = "data/mothur/raw.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.opti_mcc.shared")
+
+# Convert the "Group" column to character type
+shared <- shared %>%
+  mutate(Group = as.character(x = Group))
+
+################################################################################
+# Rarefied OTU/sample
+################################################################################
+
+# Load the rarefied OTU/sample data
+load(file = "results/numerical/rarefied.Rdata")
+
+################################################################################
+# Error rate
+################################################################################
+
+# Load error rate data
+error <- read_tsv("data/mothur/raw.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.error.summary", na = "")
+
+################################################################################
+# Taxonomy
+################################################################################
+
+# Load taxonomy data
+taxonomy <- read_tsv(file = "data/mothur/raw.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.silva.wang.tax.summary")
+
+################################################################################
+# Metadata
+################################################################################
+
+# Load metadata
+metadata <- read_tsv(file = "data/raw/metadata.tsv")
+
+################################################################################
+# Richness estimators and diversity indices
+################################################################################
+
+# Load richness estimators and diversity indices data
+load(file = "results/numerical/alpha.Rdata")
+
+################################################################################
+# Kruskal-Wallis H test
+################################################################################
+
+# Load Kruskal-Wallis H test data
+load(file = "results/numerical/kruskal_wallis.Rdata")
+
+################################################################################
+# Bray–Curtis dissimilarity coefficients
+################################################################################
+
+# Load the Bray–Curtis dissimilarity coefficients
+load(file = "results/numerical/beta.Rdata")
+
+```
+\vspace{\fill}
+
+Marino Korlević^1\*^, Marsej Markovski^1^, Damir Kapetanović^2^, Irena Vardić Smrzlić^2^, Karla Orlić^2^, Jakša Bolotin^3^, Valter Kožul^3^, Svjetlana Bobanović-Ćolić^3^, Vedrana Nerlović^4^, and Lorena Perić^2\*^
+
+1. Centre for Marine Research, Ruđer Bošković Institute, Croatia
+2. Division for Marine and Environmental Research, Ruđer Bošković Institute, Croatia
+3. Institute for Marine and Coastal Research, University of Dubrovnik, Croatia
+4. Faculty of Marine Sciences, University of Split, Croatia
+
+^\*^To whom correspondence should be addressed:  
+Marino Korlević  
+G. Paliaga 5, 52210 Rovinj, Croatia  
+e-mail: [marino.korlevic\@irb.hr](mailto:marino.korlevic@irb.hr){.email}  
+ORCID iD: [0000-0001-5680-3556](https://orcid.org/0000-0001-5680-3556)
+
+Lorena Perić  
+Bijenička cesta 54, 10000 Zagreb, Croatia  
+e-mail: [lorena.peric@irb.hr](mailto:lorena.peric@irb.hr){.email}  
+ORCID iD: [0000-0001-6899-9605](https://orcid.org/0000-0001-6899-9605)
+
+```{=latex}
+
+% Add line numbers
+\linenumbers
+
+% Ensure that numbers are typeset in text mode
+\sisetup{mode=text}
+
+% Set the size of indentation to 24 pt
+\setlength\parindent{24pt}
+
+% Start a new page
+\newpage
+
+```
+
+# Abstract
+
+Microorganisms associate with marine bivalves, forming microbial communities collectively known as the bivalve's microbiome. These communities may include resident taxa, associated with the bivalve host throughout its life, and transient taxa, whose presence is temporary and attributed to the passage of, for example, seawater or food through the host. To assess the gill microbiome of the Mediterranean mussel, *Mytilus galloprovincialis* Lamarck, 1819, and its resident and transient taxa, individuals of this important aquaculture species were sampled at two locations on the eastern coast of the Adriatic Sea, Lim Bay and Mali Ston Bay, over one year. The microbiome was characterised using Illumina MiSeq sequencing of the V4 region of the 16S rRNA gene. For comparison, the microbial community in the surrounding seawater and sediment was also assessed at the same time and locations. The structure of the gill microbiome, determined at the OTU level, was distinct from the microbial community in both the surrounding seawater and sediment and did not differ between the two locations. However, it showed differences between months, indicating temporal dynamics. Taxonomic analysis revealed the presence of both resident and transient microbial taxa in the gill microbiome. Members without known relatives within *Endozoicomonadaceae* were present in the gills of mussels from both locations and throughout the study period and appeared to be resident members. In contrast, *Endozoicomonas*, "*Candidatus* Endoecteinascidia", *Vibrio*, and members without known relatives within *Vibrionaceae* were transient, appearing in the gill microbiome only in certain months. Overall, the results of this study show that the gill microbiome of the mussel *Mytilus galloprovincialis* differs from the microbial community in the surrounding seawater and sediment, exhibits temporal dynamics, and contains both resident and transient microbial taxa.
+
+\noindent
+**Keywords:** gill microbiome, Mediterranean mussel, *Mytilus galloprovincialis*, aquaculture, Adriatic Sea, 16S rRNA gene sequencing, temporal changes, *Gammaproteobacteria*
+\newpage
+
+# Introduction
+
+Marine animals, including bivalves, are associated with various microorganisms such as archaea, bacteria, viruses, protists, and fungi [@Apprill2017; @Salloum2025]. These microbes, collectively known as the animal's microbiome, can reside on or within the animal's body [@Apprill2017; @Petersen2018]. If located inside the body, they may live either outside or within host cells. Notably, microbes within host cells can inhabit specialised cells dedicated to housing symbionts, forming a particularly intimate type of symbiosis [@Petersen2018]. The close relationship between the host and its microbiome can be viewed as a holobiont: an integrated community in which the animal and its symbiotic microbes support each other [@Margulis1991; @Salloum2025]. Furthermore, as suggested by the hologenome concept, the genetic content of the host and the microbes in its microbiome should be considered a single evolutionary unit, meaning that host evolution is influenced by its microbiome [@Bordenstein2015; @Salloum2025].
+
+The bivalve's microbiome may include both resident members, associated with the host throughout its life, and transient members, whose presence is temporary and attributed, for example, to the passage of seawater or food through the animal [@Pierce2018]. Evidence suggests that most microbes in the bivalve's microbiome are resident members [@Unzueta-Martinez2022a]. These microbes may be acquired by the host vertically, transmitted from parent to offspring, horizontally, adopted from the surrounding environment, or through a combination of these processes [@Bright2010; @Petersen2018; @Unzueta-Martinez2022]. Studies have also shown that the microbiome of various bivalve species differs from the microbial community in surrounding seawater or sediment, highlighting the resident nature of most microbiome members [@Akter2023; @Arfken2017; @Lokmer2016; @Musella2020; @Pierce2019; @Unzueta-Martinez2022; @Vezzulli2018]. In addition to differing from the surrounding environment, the bivalve's microbiome also varies between body parts, such as the gut, gills, and haemolymph [@Dube2019; @Lokmer2016; @Musella2020; @Unzueta-Martinez2022; @Vezzulli2018], and is, to some extent and for certain body parts, specific to the host species [@Akter2023; @Gignoux-Wolfsohn2024; @Munoz-Martinez2026; @Pierce2019; @Vezzulli2018]. Although most microbes in the bivalve's microbiome appear to be resident members, a portion is still transient [@Unzueta-Martinez2022a], as suggested by studies reporting temporal changes [@Akter2023; @Nguyen2020; @Pierce2016; @Pierce2019]. The bivalve's microbiome can also differ between geographic locations [@delRio-Lavin2023; @Gignoux-Wolfsohn2024; @Lokmer2016a; @Nguyen2020; @Unzueta-Martinez2022a], indicating that local conditions may also have an influence. Interestingly, the microbiome of bivalves transported from one geographic location to another converges towards that of native bivalves, highlighting the importance of local conditions [@Peruzzo2026; @Sun2025].
+
+Microbes forming the bivalve's microbiome belong to various high-rank bacterial taxa, including the *Pseudomonadota* classes *Alphaproteobacteria* and *Gammaproteobacteria*, *Bacillota*, *Bacteroidota*, *Fusobacteriota*, and *Spirochaetota* [@Gignoux-Wolfsohn2024; @Lasa2019; @Munoz-Martinez2026]. Members of these taxa have also been found in the microbiome of the Mediterranean mussel, *Mytilus galloprovincialis* Lamarck, 1819 [@Auguste2024a; @Akter2023; @Bozcal2020; @delRio-Lavin2023; @Munoz-Martinez2026; @Musella2020; @Palladino2023; @Peruzzo2026; @Schoinas2023; @Vezzulli2018; @Wathsala2021; @Zardinoni2024], an important aquaculture bivalve species widely distributed across the Mediterranean Sea, including the Adriatic Sea [@Gosling2003b; @Gosling2003d; @Hamer2012; @Kijewski2011; @Wenne2022]. Studies focusing on *M. galloprovincialis* have reported patterns of dynamics for this species' microbiome similar to those previously mentioned for the bivalve's microbiome in general. Specifically, differences between the microbiome and the ambient seawater have been reported [@Akter2023; @Musella2020; @Palladino2023; @Vezzulli2018; @Zardinoni2024], as well as microbiome specificity for this host species [@Akter2023; @Munoz-Martinez2026; @Vezzulli2018] and its variation between body parts [@Musella2020; @Vezzulli2018], sampling periods [@Akter2023; @Palladino2023; @Peruzzo2026; @Wathsala2021], and geographic locations [@Palladino2023; @Peruzzo2026; @delRio-Lavin2023].
+
+In general, studies assessing the bivalve's microbiome have focused on gut tissue [@Salloum2025]. Similarly, research on the *M. galloprovincialis* microbiome has usually examined the gut microbiome [@Akter2023; @delRio-Lavin2023; @Palladino2023; @Vezzulli2018; @Wathsala2021] or assessed the microbiome of the whole individual without a tissue-specific sampling approach [@Bozcal2020; @Munoz-Martinez2026; @Schoinas2023; @Peruzzo2026]. Consequently, a limited number of studies have described the temporal and spatial dynamics of the microbiome in other body parts, such as gills and haemolymph [@Auguste2024a; @Sun2025; @Zardinoni2024]. As the mussel *M. galloprovincialis* is a filter-feeding animal [@Gosling2003a], its gills are in constant contact with seawater and may be influenced by sediment resuspension. Therefore, this study focused on assessing the gill microbiome of individuals of this bivalve species, as well as the microbial community in the surrounding seawater and sediment, from two important and geographically distant bivalve aquaculture locations on the eastern coast of the Adriatic Sea, namely Lim Bay and Mali Ston Bay [@BratosCetinic2024], over a period of one year. The study locations are in two legally protected marine reserve areas with distinct hydrological conditions and productivity, typical of the Adriatic Sea biogeographical regions to which they belong [@Bosak2013; @Matek2024; @Silovic2012a; @Skejic2015]. More precisely, the aims of this study were to: (i) compare the mussel gill microbiome with the microbial community in the surrounding seawater and sediment, (ii) determine differences in the gill microbiome between the two aquaculture locations, and (iii) assess changes in the gill microbiome during the one-year study period.
+
+# Methods
+
+## Sampling
+
+This study was conducted at two bivalve aquaculture locations: Lim Bay in the north and Mali Ston Bay in the south of the eastern Adriatic Sea coast (Fig. \@ref(fig:map)). Mussels of the species *M. galloprovincialis*, seawater, and sediment were sampled in July, September, and November 2020 and January, March, and May 2021 (Supplementary Tables \@ref(supp-tab:nseq-notus-seawater-sediment) and \@ref(supp-tab:nseq-notus-gills)), as described in Žurga et al. (2024) [@Zurga2024] and Orlić et al. (2025) [@Orlic2025a]. Briefly, locally produced adult mussels were deployed at an aquaculture site at a depth of 10 \unit{\m} in Lim Bay (\ang{45;7;50}N, \ang{13;41;20}E) and 6 \unit{\m} in Mali Ston Bay (\ang{42;52;16}N, \ang{17;42;12}E), following common farming practices at these locations (Fig. \@ref(fig:map)). At each sampling date, 10 individuals were collected, their gills excised, and snap-frozen in liquid nitrogen. Seawater was collected at a depth close to that at which mussels were deployed, specifically 8 \unit{\m} in Lim Bay and 5 \unit{\m} in Mali Ston Bay, using a Niskin bottle and filtered (0.35–1 \unit{\l}) through 0.2 \unit{\um} membrane filters. Filters were transferred into 2 \unit{\ml} cryotubes and snap-frozen in liquid nitrogen. Sediment was collected using an Ekman grab sampler, transferred into 2 \unit{\ml} cryotubes, and also snap-frozen in liquid nitrogen. Upon arrival at the laboratory, samples of gills and sediment, as well as membrane filters, were stored at \qty{-80}{\degreeCelsius} until further processing. For comparison, in addition to the aquaculture site, seawater and sediment were also sampled at a control site, where no mussels were farmed, in both Lim Bay (\ang{45;7;57}N, \ang{13;38;27}E) and Mali Ston Bay (\ang{42;51;59}N, \ang{17;42;5}E; Fig. \@ref(fig:map)). Seawater from the control site was sampled at the same depth as at the aquaculture site.
+
+```{r, map, out.width = "100%", fig.align = "center", fig.cap = "(ref:map)", , fig.pos = "ht"}
+
+include_graphics(path = "../results/figures/map.jpg")
+
+```
+(ref:map) Sampling locations and sites in the Adriatic Sea. At each location, namely Lim Bay and Mali Ston Bay, samples were collected from one aquaculture site and one control site (© OpenStreetMap contributors, \url{https://www.openstreetmap.org/copyright})
+
+## DNA isolation
+
+Total DNA from gills (32–123 \unit{\mg}) and 0.2 \unit{\um} membrane filters was isolated according to Massana et al. (1997) [@Massana1997] with slight modifications. After extraction with organic solvents, 1/10 volume of 3 \unit{\Molar} sodium acetate (pH 5.2) was added. DNA was precipitated by adding 1 volume of cold (\qty{-20}{\degreeCelsius}) isopropanol and incubating the mixture for 1 \unit{\hour} or overnight at \qty{-20}{\degreeCelsius}. The pellet obtained after centrifugation at 20,000 × *g* and \qty{4}{\degreeCelsius} for 20 \unit{\minute} was washed twice with 500 \unit{\ul} of cold (\qty{-20}{\degreeCelsius}) 70\unit{\percent} ethanol. After each wash, the pellet was centrifuged at 20,000 × *g* and \qty{4}{\degreeCelsius} for 5 \unit{\minute}. Air-dried pellets were resuspended in 100 \unit{\ul} of deionised water for DNA isolated from gills and 50 \unit{\ul} for DNA isolated from membrane filters. Total DNA from sediment was isolated as described in Markovski et al. (2022) [@Markovski2022]. This is a modified protocol [@Pjevac2018] of the isolation procedure described in Zhou et al. (1996) [@Zhou1996]. Briefly, 2 \unit{\gram} of sediment was mixed with extraction buffer and proteinase K, and incubated by horizontal shaking at 37 \unit{\degreeCelsius} for 30 \unit{\minute}. After SDS was added, the mixture was incubated again by horizontal shaking at 65 \unit{\degreeCelsius} for 60 \unit{\minute}. Sediment particles were removed by centrifugation and the supernatant was extracted three times with an equal volume of chloroform:isoamyl alcohol (1:1). DNA was precipitated by adding isopropanol and incubating the mixture at 22 \unit{\degreeCelsius} for 60 \unit{\minute}. The pellet obtained by centrifugation was washed twice with cold (\qty{-20}{\degreeCelsius}) 70\unit{\percent} ethanol, air-dried, and resuspended in 100 \unit{\ul} of deionised water.
+
+## Illumina 16S rRNA sequencing
+
+DNA isolated from gills, membrane filters, and sediment was treated with RNase A at a final concentration of 200 \unit{\ug\per\ml} at 37 \unit{\degreeCelsius} for 2 \unit{\hour}. DNA concentration was determined using the Quant-iT PicoGreen dsDNA Assay Kit (Invitrogen, USA) according  to the manufacturer’s instructions. DNA from gills was diluted to 10 \unit{\ng\per\ul}, and DNA from membrane filters and sediment to 1 \unit{\ng\per\ul}. The V4 region of the 16S rRNA gene was amplified using a two-step PCR procedure. In the first PCR, 515F (Parada; 5$'$-GTGYCAGCMGCCGCGGTAA-3$'$) and 806R (Apprill; 5$'$-GGACTACNVGGGTWTCTAAT-3$'$) primers from the Earth Microbiome Project (<https://earthmicrobiome.org/protocols-and-standards/16s>) were used [@Apprill2015; @Caporaso2011; @Caporaso2012; @Parada2016], each with a sequence tag at the 5$'$ end. Four parallel PCRs were performed to amplify the target region from each DNA sample. Each 25 \unit{\ul} reaction contained 1 × Q5 Reaction Buffer, 0.2 \unit{\milli\Molar} dNTP mix, 0.7 \unit{\mg\per\ml} bovine serum albumin (BSA), 0.5 \unit{\micro\Molar} forward and
+reverse primers, 0.5 \unit{\U} Q5 High-Fidelity DNA Polymerase (New England Biolabs, USA), and 50 \unit{\ng} DNA template from gills or 5 \unit{\ng} from membrane filters and sediment. The cycling conditions were: initial denaturation at 98 \unit{\degreeCelsius} for 30 \unit{\s}; 25 cycles of denaturation at 98 \unit{\degreeCelsius} for 10 \unit{\s}, annealing at 50 \unit{\degreeCelsius} for 30 \unit{\s}, and elongation at 72 \unit{\degreeCelsius} for 5 \unit{\s} for reactions with DNA from gills or 30 \unit{\s} for reactions with DNA from membrane filters and sediment. PCR cycling ended with a final elongation at 72 \unit{\degreeCelsius} for 2 \unit{\minute}. The higher amount of DNA template (50 \unit{\ng}) and shorter elongation time (5 \unit{\s}) used for amplifying the target region from DNA isolated from gills were optimised to reduce amplification of non-specific fragments. The four parallel reactions were pooled, and PCR products were purified using the GeneJET PCR Purification Kit (Thermo Fisher Scientific, USA) according to the manufacturer’s instructions. The protocol without isopropanol addition was followed to avoid co-purification of primer-dimers. The column was eluted in 30 \unit{\ul} deionised water.
+
+Purified PCR products were sent to IMGM Laboratories, Martinsried, Germany, for Illumina MiSeq sequencing (2 × 250 \unit{\bp}). Before sequencing, the second PCR in the two-step PCR procedure was performed using primers that bind to the sequence tag added during the first PCR. Adapter and sample-specific index sequences were also incorporated in the second PCR by including these sequences at the 5$'$ end of the primers used. This PCR was performed for eight cycles. In addition to the gill, seawater, and sediment samples, two positive and two negative controls were sequenced. Each positive control consisted of four parallel PCRs using genomic DNA from a mock community composed of evenly mixed DNA from 20 bacterial strains (ATCC MSA-1002, ATCC, USA) as the DNA template. Each negative control comprised four parallel PCRs without a DNA template. One positive and one negative control were processed according to the PCR procedure for gill samples, and one positive and one negative control according to the PCR procedure for seawater and sediment samples.
+
+## Sequence and data analysis
+
+Sequences obtained were analysed using mothur (version `r system("code/mothur/mothur --version", intern = TRUE)[2] %>% str_extract(pattern = "[0-9.()]+")`) [@Schloss2009] following the MiSeq Standard Operating Procedure (MiSeq SOP\; <https://mothur.org/wiki/miseq_sop>) [@Kozich2013] and recommendations from the Riffomonas project to enhance data reproducibility (<https://riffomonas.org>). For alignment and classification, the SILVA SSU Ref NR 99 database (release 138.2; <https://www.arb-silva.de>) was used [@Quast2013; @Yilmaz2014]. Sequences were clustered into operational taxonomic units (OTUs) using a  97\unit{\percent} similarity threshold.
+
+Data processing and visualisation were performed using R (version `r R.version$version.string %>% str_extract(pattern = "[0-9]+\\.[0-9]+\\.[0-9]+")`) [@R-base] with the packages vegan (version `r as.character(packageVersion(pkg = "vegan")) %>% str_replace(pattern = "\\.([^.]+$)", replacement = "-\\1")`) [@R-vegan] and tidyverse (version `r as.character(packageVersion(pkg = "tidyverse"))`) [@R-tidyverse; @tidyverse2019], as well as several other packages [`r deframe(x = citation_keys) %>% paste0(collapse = "; ")`]. The observed number of OTUs, Chao1, ACE, exponential of the Shannon diversity index, and Inverse Simpson diversity index were calculated after normalisation to the minimum number of sequences per sample using vegan’s function `rrarefy` to account for differences in sequencing depth [@R-vegan]. Richness estimators Chao1 and ACE were obtained using vegan's function `estimateR`, while the Shannon and Inverse Simpson diversity indices were calculated using vegan's function `diversity` [@R-vegan]. To express both diversity indices as the effective number of OTUs, the exponential of the Shannon diversity index was calculated [@Jost2006]. Variation in microbial community structure was assessed on OTU abundances by pooling sequences from each environment, site, location, or month and calculating the Bray–Curtis dissimilarity coefficient using vegan’s function `vegdist` after normalising the newly created pools to the minimum number of sequences per pool with vegan’s function `rrarefy` [@Borcard2018; @Legendre2012; @R-vegan]. Differences between these communities from distinct environments, sites, locations, and months were tested by performing Analysis of Similarities (ANOSIM) using vegan’s function `anosim` with 999 permutations [@R-vegan]. Differences between richness estimators, diversity indices, and proportions of taxa were tested using the Mann–Whitney *U* test with the function `wilcox.test` when two groups were compared, or the Kruskal–Wallis *H* test with the function `kruskal.test`, followed by pairwise comparison with the Mann–Whitney *U* test using the function `pairwise.wilcox.test`, when more than two groups were compared [@R-base]. The Bonferroni correction was applied to address the multiple comparisons problem.
+
+```{r, methods-sequence-otu-number}
+
+# Calculate the total number of sequences
+sequence_number <- shared %>%
+  # Select columns that start with "Otu"
+  select(starts_with(match = "Otu")) %>%
+  # Sum the sequences and convert to millions
+  sum() / 1e6
+
+# Calculate the total number of OTUs
+otu_number <- shared %>%
+  # Select columns that start with "Otu"
+  select(starts_with(match = "Otu")) %>%
+  # Extract the names of the selected columns
+  colnames() %>%
+  # Calculate the number of columns that
+  # start with "Otu"
+  length()
+
+# Calculate the number of sequences and OTUs in each sample
+nseq_notus <- shared %>%
+  # Sum the number of sequences in each sample
+  mutate(nseq = rowSums(x = select(., starts_with(match = "Otu")))) %>%
+  # Sum the number of OTUs in each sample
+  mutate(notus = rowSums(x = select(., starts_with(match = "Otu")) != 0))
+
+```
+
+```{r, methods-rarefied-sequence-otu-number}
+
+# Calculate the total number of OTUs from a randomly
+# rarefied version of the community data
+rarefied_otu_number <- rarefied %>%
+  # Select columns that start with "Otu"
+  select(starts_with(match = "Otu")) %>%
+  # Extract the names of the selected columns
+  colnames() %>%
+  # Calculate the number of columns that
+  # start with "Otu"
+  length()
+
+# Calculate the number of sequences and OTUs in each sample
+# using a randomly rarefied version of the community data
+rarefied_nseq_notus <- rarefied %>%
+  # Sum the number of sequences in each sample
+  mutate(nseq = rowSums(x = select(., starts_with(match = "Otu")))) %>%
+  # Sum the number of OTUs in each sample
+  mutate(notus = rowSums(x = select(., starts_with(match = "Otu")) != 0))
+
+```
+
+```{r, methods-error}
+
+# Calculate the sequencing error rate based on the ATCC MSA-1002 mock community
+error_rate <- error %>%
+  # Filter sequences that are not chimeric (numparents == 1)
+  filter(numparents == 1) %>%
+  # Calculate the total number of mismatches
+  mutate(mismatches_weight = weight * mismatches) %>%
+  # Calculate the total number of bases
+  mutate(total_weight = weight * total) %>%
+  # Calculate the sequencing error rate as the sum of mismatches divided by the
+  # sum of bases in the query, multiplied by 100 to get a percentage
+  summarise(error_rate = sum(mismatches_weight) / sum(total_weight) * 100)
+
+# Calculate the number of sequences in negative controls
+sequence_nc <- taxonomy %>%
+  # Filter the row containing the total number of sequences
+  filter(taxon == "Root") %>%
+  # Select the negative controls
+  select(NC1, NC2)
+
+```
+From six sampling months, two locations (Lim Bay and Mali Ston Bay), and two sites (aquaculture and control), `r 6 * 2 * 2` seawater and `r 6 * 2 * 2` sediment samples were processed. Additionally, from 10 individuals collected at the aquaculture site during the same months and locations, `r 6 * 2 * 1 * 10` gill samples were processed. This resulted in a total of `r 6 * 2 * 2 * 2 + 6 * 2 * 1 * 10` samples, of which `r metadata %>% filter(!(id %in% c("PC1", "PC2", "NC1", "NC2"))) %>% summarise(n_samples = n())` yielded sufficient sequences for further analysis (Supplementary Tables \@ref(supp-tab:nseq-notus-seawater-sediment) and \@ref(supp-tab:nseq-notus-gills)). From these samples, a total of `r sequence_number` million sequences were obtained after quality curation and exclusion of sequences without known relatives (no relative sequences), as well as eukaryotic, chloroplast, and mitochondrial sequences. The number of sequences per sample ranged from `r min(nseq_notus$nseq)` to `r max(nseq_notus$nseq)` (Supplementary Tables \@ref(supp-tab:nseq-notus-seawater-sediment) and \@ref(supp-tab:nseq-notus-gills)). These sequences were clustered into a total of `r otu_number` different OTUs. For seawater and sediment samples, as well as for gill samples with a high number of OTUs, the rarefaction curves did not level off, even with the highest sequencing effort, as is commonly observed in high-throughput 16S rRNA amplicon sequencing approaches (Supplementary Figs. \@ref(supp-fig:rarefaction-a) and \@ref(supp-fig:rarefaction-b)). However, for gill samples with a low number of OTUs, the rarefaction curves did level off. Normalisation to the minimum number of sequences per sample (`r min(nseq_notus$nseq)` sequences) resulted in `r rarefied_otu_number` different OTUs, ranging from `r min(rarefied_nseq_notus$notus)` to `r max(rarefied_nseq_notus$notus)` OTUs per sample. Based on the positive controls (mock community ATCC MSA-1002), a sequencing error rate of `r error_rate$error_rate`\unit{\percent} was calculated, which is comparable to previously reported values for next-generation 16S rRNA amplicon sequencing [@Korlevic2021a; @Kozich2013; @Markovski2022; @Schloss2016]. In addition, the two negative controls processed with the samples yielded `r min(sequence_nc)` and `r max(sequence_nc)` sequences after sequence quality curation.
+\newpage
+
+# Results
+
+```{r, results-alpha-observed-otus}
+
+# Extract the values of the observed number of OTUs for reporting
+alpha_otu_seawater_aq <- alpha %>%
+  filter(parameter == "S.obs") %>%
+  filter(environment == "Seawater") %>%
+  filter(site == "Aquaculture")
+alpha_otu_seawater_ctrl <- alpha %>%
+  filter(parameter == "S.obs") %>%
+  filter(environment == "Seawater") %>%
+  filter(site == "Control")
+alpha_otu_sediment_aq <- alpha %>%
+  filter(parameter == "S.obs") %>%
+  filter(environment == "Sediment") %>%
+  filter(site == "Aquaculture")
+alpha_otu_sediment_ctrl <- alpha %>%
+  filter(parameter == "S.obs") %>%
+  filter(environment == "Sediment") %>%
+  filter(site == "Control")
+alpha_otu_gills_aq <- alpha %>%
+  filter(parameter == "S.obs") %>%
+  filter(environment == "Gills") %>%
+  filter(site == "Aquaculture")
+
+```
+
+```{r, results-alpha-locations}
+
+# Extract the values of the Inverse Simpson diversity index of sediment
+# samples for reporting
+alpha_invs_sediment_lim <- alpha %>%
+  filter(parameter == "invsimpson") %>%
+  filter(environment == "Sediment") %>%
+  filter(location == "Lim Bay")
+alpha_invs_sediment_mali_ston <- alpha %>%
+  filter(parameter == "invsimpson") %>%
+  filter(environment == "Sediment") %>%
+  filter(location == "Mali Ston Bay")
+
+# Define the object name for storing statistical results
+wilcox_location <- NULL
+
+# Perform the Mann-Whitney U test for richness estimators and diversity indices
+# to test differences between locations for each environment
+for (i in c("Seawater", "Sediment", "Gills")) {
+  
+  # Filter each environment
+  data <- alpha %>%
+    filter(environment == i)
+  
+  for (j in c("S.obs", "S.chao1", "S.ACE", "eshannon", "invsimpson")) {
+    
+    # Filter each richness estimator and diversity index
+    # for samples from Lim Bay
+    data_x <- data %>%
+      filter(parameter == j) %>%
+      filter(location == "Lim Bay")
+    # Filter each richness estimator and diversity index
+    # for samples from Mali Ston Bay
+    data_y <- data %>%
+      filter(parameter == j) %>%
+      filter(location == "Mali Ston Bay")
+    
+    # Perform the Mann-Whitney U test
+    test <- wilcox.test(x = data_x$value, y = data_y$value,
+                        alternative = "two.sided", paired = FALSE)
+  
+    # Store the statistical results in a tibble
+    test_data <- tribble(
+      # Define the column names for the tibble
+      ~ environment, ~ parameter, ~ n_x, ~ n_y, ~ W, ~ p,
+      # Add rows to the tibble with the Mann-Whitney U test results
+      i, j, length(data_x$value), length(data_y$value),
+      test$statistic, test$p.value)
+  
+    # Combine the statistical results of each richness estimator
+    # and diversity index in a tibble
+    wilcox_location <- bind_rows(wilcox_location,
+                                 test_data)
+    
+  }
+}
+
+# Extract statistical values for reporting 
+wilcox_location <- wilcox_location %>%
+  # Filter the row containing statistical results for the sediment
+  # microbial community and the Inverse Simpson diversity index
+  filter(environment == "Sediment", parameter == "invsimpson")
+
+```
+
+```{r, results-alpha-gills-months}
+
+# Define the object name for storing statistical results
+kruskal_wallis_gills_months <- NULL
+
+# Perform the Kruskal-Wallis H test for richness estimators and
+# diversity indices across different months for gill samples
+for (i in c("S.obs", "S.chao1", "S.ACE", "eshannon", "invsimpson")) {
+  
+  # Prepare data for testing
+  data <- alpha %>%
+    # Filter gill samples
+    filter(environment == "Gills") %>%
+    # Filter each richness estimator and diversity index
+    filter(parameter == i) %>%
+    # Define testing groups
+    mutate(group = interaction(month, year, sep = "_"))
+  
+  # Perform the Kruskal-Wallis H test
+  kruskal <- kruskal.test(formula = value ~ group,
+                          data = data)
+  
+  # Perform the pairwise Mann-Whitney U test
+  pairwise_wilcox <- pairwise.wilcox.test(
+    x = data$value, g = data$group,
+    p.adjust.method = "bonferroni")
+  
+  # Convert the results of the pairwise Mann-Whitney U test
+  # to a tibble
+  pairwise_wilcox_tibble <- pairwise_wilcox$p.value %>%
+    # Convert the results to a tibble
+    as_tibble(.name_repair = "check_unique", rownames = NA) %>%
+    # Transfer the testing group names from row names to a column
+    rownames_to_column("group")
+    
+  # Store the statistical results in a tibble
+  test_data <- tribble(
+    # Define the column names for the tibble
+    ~ parameter, ~ n, ~ kw_H, ~ kw_df, ~ kw_p, ~ mw_p, 
+    # Add rows to the tibble with the Kruskal-Wallis H test and
+    # pairwise Mann-Whitney U test results
+    i, count(x = data, group),
+    kruskal$statistic, kruskal$parameter, kruskal$p.value,
+    pairwise_wilcox_tibble)
+  
+  # Combine the statistical results of each richness estimator
+  # and diversity index in a tibble
+  kruskal_wallis_gills_months <- bind_rows(kruskal_wallis_gills_months,
+                                           test_data)
+  
+}
+
+# Extract statistical values for reporting 
+kruskal_wallis_gills_months <- kruskal_wallis_gills_months %>%
+  # Filter rows containing statistical results on richness estimators
+  # Chao1 and ACE
+  filter(parameter == "S.chao1" | parameter == "S.ACE") %>%
+  # Expand the list-column "mw_p" containing tibbles into rows and columns
+  unnest(cols = mw_p)
+
+```
+To assess the richness and diversity of microbial communities, the observed number of OTUs, the richness estimators Chao1 and ACE, the exponential of the Shannon diversity index, and the Inverse Simpson diversity index were calculated at the OTU level for the sampled environments (seawater, sediment, and the gills of *M. galloprovincialis*) at both aquaculture and control sites (Fig. \@ref(fig:alpha)). Statistically significant changes were found for all parameters (Kruskal–Wallis *H* test, all *p* `r format_p_values(x = max(kruskal_wallis$kruskal_wallis_tibble$kw_p), space = TRUE)`; Supplementary Table \@ref(supp-tab:kruskal-wallis)). The sediment microbial community had the highest observed number of OTUs (aquaculture, `r min(alpha_otu_sediment_aq$value)`–`r max(alpha_otu_sediment_aq$value)` OTUs; control, `r min(alpha_otu_sediment_ctrl$value)`–`r max(alpha_otu_sediment_ctrl$value)` OTUs), followed by the seawater community (aquaculture, `r min(alpha_otu_seawater_aq$value)`–`r max(alpha_otu_seawater_aq$value)` OTUs; control, `r min(alpha_otu_seawater_ctrl$value)`–`r max(alpha_otu_seawater_ctrl$value)` OTUs), and the gill microbiome (aquaculture, `r min(alpha_otu_gills_aq$value)`–`r max(alpha_otu_gills_aq$value)` OTUs). No significant differences in the observed number of OTUs were found between the aquaculture and control sites for the sediment and seawater communities (Fig. \@ref(fig:alpha) and Supplementary Table \@ref(supp-tab:kruskal-wallis)). The same pattern was observed for the exponential of the Shannon diversity index and the Inverse Simpson diversity index. However, when the richness estimators Chao1 and ACE were calculated, differences between the gill microbiome and seawater microbial communities at the aquaculture and control sites were no longer observed (Fig. \@ref(fig:alpha) and Supplementary Table \@ref(supp-tab:kruskal-wallis)). Additionally, neither parameter showed differences between the sampling locations, except for the Inverse Simpson diversity index of sediment communities, which showed higher values in Mali Ston Bay (`r min(alpha_invs_sediment_mali_ston$value)`–`r max(alpha_invs_sediment_mali_ston$value)` OTUs) than in Lim Bay (`r min(alpha_invs_sediment_lim$value)`–`r max(alpha_invs_sediment_lim$value)` OTUs; Mann–Whitney *U* test, *p* `r format_p_values(x = wilcox_location$p, space = TRUE)`). Furthermore, for the gill microbiome, only the richness estimators Chao1 and ACE showed differences across sampling months (Kruskal–Wallis *H* test, both *p* `r format_p_values(x = max(kruskal_wallis_gills_months$kw_p), space = TRUE)`). However, the only significant difference found was between January and March 2021 (pairwise Mann–Whitney *U* test, both *p* `r filter(.data = kruskal_wallis_gills_months, group == "March_2021")$January_2021 %>% max() %>% format_p_values(space = TRUE)`).
+
+```{r, alpha, out.width = "90%", fig.align = "center", fig.cap = "(ref:alpha)", fig.pos = "ht!"}
+
+include_graphics(path = "../results/figures/alpha.jpg")
+
+```
+(ref:alpha) The observed number of OTUs, Chao1, ACE, exponential of the Shannon diversity index, and Inverse Simpson diversity index of microbial communities from different environments and sites. Dashed boxes indicate groups of samples from the control site, while non-dashed areas represent groups of samples from the aquaculture site. Groups that do not share a letter are significantly different (*p* < 0.05)
+
+```{r, results-beta-environments-sites}
+
+# Extract the values of the Bray–Curtis dissimilarity coefficient
+# for reporting
+bray_seawater_aq_ctrl <- bray %>%
+  filter(y_strip == "Environments and Sites") %>%
+  filter((columns_inside == "Seawater" & columns_outside == "Aquaculture") &
+         (rows_inside == "Seawater" & rows_outside == "Control"))
+bray_sediment_aq_ctrl <- bray %>%
+  filter(y_strip == "Environments and Sites") %>%
+  filter((columns_inside == "Sediment" & columns_outside == "Aquaculture") &
+         (rows_inside == "Sediment" & rows_outside == "Control"))
+bray_other <- bray %>%
+  filter(y_strip == "Environments and Sites") %>%
+  filter(!((columns_inside == "Seawater" & columns_outside == "Aquaculture") &
+           (rows_inside == "Seawater" & rows_outside == "Control")) &
+         !((columns_inside == "Sediment" & columns_outside == "Aquaculture") &
+           (rows_inside == "Sediment" & rows_outside == "Control")))
+
+################################################################################
+# Calculate ANOSIM for the overall microbial community using environments
+# as a factor for grouping
+################################################################################
+
+# Customise metadata and join metadata with
+# rarefied OTU/sample data
+metadata_rarefied <- metadata %>%
+  # Customise metadata using a custom function
+  format_labels() %>%
+  # Join metadata with rarefied OTU/sample data
+  right_join(y = rarefied, by = c("id" = "id"))
+
+# Define ANOSIM analysis groups
+groups <- metadata_rarefied %>%
+  # Group samples based on the sampled
+  # environment
+  mutate(groups = environment) %>%
+  # Select the created column "groups"
+  select(groups) %>%
+  # Convert the tibble to a vector
+  deframe()
+
+# Select OTU abundance data
+metadata_rarefied <- metadata_rarefied %>%
+  # Select columns containing OTU abundance data
+  select(id, starts_with(match = "Otu")) %>%
+  # Add sample IDs to row names
+  column_to_rownames("id")
+
+# Calculate ANOSIM
+anosim_environments <- anosim(x = metadata_rarefied, grouping = groups,
+                              permutations = 999, distance = "bray")
+
+################################################################################
+# Calculate ANOSIM for the seawater and sediment communities
+# using sites as a factor for grouping
+################################################################################
+
+# Calculate the Bray–Curtis dissimilarity coefficients between sampling
+# sites using the custom function
+bray_seawater_sites <- custom_bray(shared = shared,
+                                   metadata = metadata,
+                                   filter_environment = "Seawater",
+                                   group_by = "site")
+bray_sediment_sites <- custom_bray(shared = shared,
+                                   metadata = metadata,
+                                   filter_environment = "Sediment",
+                                   group_by = "site")
+
+# Calculate ANOSIM
+anosim_seawater_sites <- anosim(
+  x = select(.data = bray_seawater_sites$rarefied_data,
+             starts_with(match = "Otu")),
+  grouping = select(.data = bray_seawater_sites$rarefied_data,
+                    site)$site, permutations = 999, distance = "bray")
+anosim_sediment_sites <- anosim(
+  x = select(.data = bray_sediment_sites$rarefied_data,
+             starts_with(match = "Otu")),
+  grouping = select(.data = bray_sediment_sites$rarefied_data,
+                    site)$site, permutations = 999, distance = "bray")
+
+```
+
+```{r, results-beta-locations}
+
+# Calculate the Bray–Curtis dissimilarity coefficients between sampling
+# locations using the custom function
+bray_seawater_locations <- custom_bray(shared = shared,
+                                       metadata = metadata,
+                                       filter_environment = "Seawater",
+                                       group_by = "location")
+bray_sediment_locations <- custom_bray(shared = shared,
+                                       metadata = metadata,
+                                       filter_environment = "Sediment",
+                                       group_by = "location")
+bray_gills_locations <- custom_bray(shared = shared,
+                                    metadata = metadata,
+                                    filter_environment = "Gills",
+                                    group_by = "location")
+
+# Calculate ANOSIM for each environment using locations as a
+# factor for grouping
+anosim_seawater_locations <- anosim(
+  x = select(.data = bray_seawater_locations$rarefied_data,
+             starts_with(match = "Otu")),
+  grouping = select(.data = bray_seawater_locations$rarefied_data,
+                    location)$location, permutations = 999, distance = "bray")
+anosim_sediment_locations <- anosim(
+  x = select(.data = bray_sediment_locations$rarefied_data,
+             starts_with(match = "Otu")),
+  grouping = select(.data = bray_sediment_locations$rarefied_data,
+                    location)$location, permutations = 999, distance = "bray")
+anosim_gills_locations <- anosim(
+  x = select(.data = bray_gills_locations$rarefied_data,
+             starts_with(match = "Otu")),
+  grouping = select(.data = bray_gills_locations$rarefied_data,
+                    location)$location, permutations = 999, distance = "bray")
+
+# Extract the ANOSIM R value containing the minus sign for reporting
+# (omits the inline usage of code containing $ signs and embraced by $ signs;
+# $ signs are required to properly render the minus sign in the output;
+# if code containing $ signs and embraced by $ signs is used, unusual
+# highlighting in RStudio is obtained)
+anosim_seawater_sites_statistic <- custom_round(
+  x = anosim_seawater_sites$statistic)
+
+```
+
+```{r, results-beta-gills-months}
+
+# Extract the values of the Bray–Curtis dissimilarity coefficient
+# for reporting
+bray_gills_sep_2020_jan_2021 <- bray %>%
+  filter(y_strip == "Gill Microbiome—Sampling Months") %>%
+  filter(((columns_inside == "September" & columns_outside == "2020") &
+         (rows_inside == "November" & rows_outside == "2020")) |
+         ((columns_inside == "September" & columns_outside == "2020") &
+         (rows_inside == "January" & rows_outside == "2021")) |
+         ((columns_inside == "November" & columns_outside == "2020") &
+         (rows_inside == "January" & rows_outside == "2021")))
+bray_gills_mar_2021_may_2021 <- bray %>%
+  filter(y_strip == "Gill Microbiome—Sampling Months") %>%
+  filter((columns_inside == "March" & columns_outside == "2021") &
+         (rows_inside == "May" & rows_outside == "2021"))
+bray_gills_other <- bray %>%
+  filter(y_strip == "Gill Microbiome—Sampling Months") %>%
+  filter(!(((columns_inside == "September" & columns_outside == "2020") &
+            (rows_inside == "November" & rows_outside == "2020")) |
+          ((columns_inside == "September" & columns_outside == "2020") &
+           (rows_inside == "January" & rows_outside == "2021")) |
+          ((columns_inside == "November" & columns_outside == "2020") &
+           (rows_inside == "January" & rows_outside == "2021")) |
+          ((columns_inside == "March" & columns_outside == "2021") &
+           (rows_inside == "May" & rows_outside == "2021"))))
+
+################################################################################
+# Calculate ANOSIM for the gill microbiomes using specified periods as a
+# factor for grouping
+################################################################################
+
+# Calculate the Bray–Curtis dissimilarity coefficients between sampling months
+# using the custom function
+bray_gills_months <- custom_bray(shared = shared,
+                                 metadata = metadata,
+                                 filter_environment = "Gills",
+                                 group_by = c("month", "year"))
+
+# Define ANOSIM analysis groups
+groups <- bray_gills_months$rarefied_data %>%
+  # Group samples based on the specified period
+  mutate(groups = case_when((month == "July" & year == "2020") ~
+                              "July_2020",
+                            (month == "September" & year == "2020") |
+                            (month == "November" & year == "2020") |
+                            (month == "January" & year == "2021") ~
+                              "September_2020–January_2021",
+                            (month == "March" & year == "2021") |
+                            (month == "May" & year == "2021") ~
+                              "March_2021–May_2021",
+                            TRUE ~ month)) %>%
+  # Select the created column "groups"
+  select(groups) %>%
+  # Convert the tibble to a vector
+  deframe()
+
+# Calculate ANOSIM
+anosim_gills_periods <- anosim(x = select(.data = bray_gills_months$rarefied_data,
+                                          starts_with(match = "Otu")),
+                               grouping = groups,
+                               permutations = 999, distance = "bray")
+
+```
+To assess variation in the structure of microbial communities between the sampled environments and sites, Bray–Curtis dissimilarity coefficients based on OTU abundances were calculated (Fig. \@ref(fig:beta)). Except for the seawater (Bray–Curtis dissimilarity, `r custom_round(x = bray_seawater_aq_ctrl$bray)`) and sediment (Bray–Curtis dissimilarity, `r custom_round(x = bray_sediment_aq_ctrl$bray)`) communities, which showed lower variation between the aquaculture and control sites, all other dissimilarities between sampled environments and sites were generally high (Bray–Curtis dissimilarity, `r custom_round(x = min(bray_other$bray))`–`r custom_round(x = max(bray_other$bray))`). The pronounced distinction of microbial communities from different environments was also supported by ANOSIM (R = `r custom_round(x = anosim_environments$statistic)`, *p* `r format_p_values(x = anosim_environments$signif, space = TRUE)`). In contrast, ANOSIM did not support differentiation of the seawater (R = $`r anosim_seawater_sites_statistic`$, *p* = `r format_p_values(x = anosim_seawater_sites$signif, space = TRUE)`) and sediment communities (R = `r custom_round(x = anosim_sediment_sites$statistic)`, *p* = `r format_p_values(x = anosim_sediment_sites$signif, space = TRUE)`) between the aquaculture and control sites. When communities from different locations were compared, gill microbiomes showed the lowest degree of variation between sampling locations (Bray–Curtis dissimilarity, `r custom_round(x = bray_gills_locations$bray_value$bray)`), followed by the seawater (Bray–Curtis dissimilarity, `r custom_round(x = bray_seawater_locations$bray_value$bray)`) and sediment (Bray–Curtis dissimilarity, `r custom_round(x = bray_sediment_locations$bray_value$bray)`) microbial communities. ANOSIM supported differentiation between locations, with some community overlap, only for sediment communities (R = `r custom_round(x = anosim_sediment_locations$statistic)`, *p* `r format_p_values(x = anosim_sediment_locations$signif, space = TRUE)`). When sampling months of the gill microbiome were compared, lower variation was observed between microbiomes from September 2020 to January 2021 (Bray–Curtis dissimilarity, `r custom_round(x = min(bray_gills_sep_2020_jan_2021$bray))`–`r custom_round(x = max(bray_gills_sep_2020_jan_2021$bray))`) and from March to May 2021 (Bray–Curtis dissimilarity, `r custom_round(x = bray_gills_mar_2021_may_2021$bray)`) compared to other dissimilarities between sampling months (Bray–Curtis dissimilarity, `r custom_round(x = min(bray_gills_other$bray))`–`r custom_round(x = max(bray_gills_other$bray))`; Fig. \@ref(fig:beta)). The separation of gill microbiomes from July 2020, September 2020 to January 2021, and March to May 2021 was also supported by ANOSIM, although with substantial community overlap (R = `r custom_round(x = anosim_gills_periods$statistic)`, *p* `r format_p_values(x = anosim_gills_periods$signif, space = TRUE)`).
+
+```{r, beta, out.width = "100%", fig.align = "center", fig.cap = "(ref:beta)", fig.pos = "t!"}
+
+include_graphics(path = "../results/figures/beta.jpg")
+
+```
+(ref:beta) Bray–Curtis dissimilarity coefficients calculated from the abundances of OTUs between microbial communities from different environments and sites, and between microbial communities from the gills of the mussel *M. galloprovincialis* (gill microbiome) sampled in different months
+
+```{r, taxonomy-environments-sites, out.width = "100%", fig.align = "center", fig.cap = "(ref:taxonomy-environments-sites)", fig.pos = "t!"}
+
+include_graphics(path = "../results/figures/taxonomy_environments_sites.jpg")
+
+```
+(ref:taxonomy-environments-sites) Taxonomic classification and average relative contribution of the most abundant (\qty{>=3}{\percent}) bacterial and archaeal sequences in different sampled environments and at each site. "No Relative" indicates sequences that could not be classified into any taxon, while "NR" (No Relative) next to the name of a taxonomic group refers to sequences that could not be assigned to any known taxon within that group
+
+```{r, results-taxonomy-environments-sites}
+
+# Clean taxonomy data using the custom function
+taxonomy_environments_sites <- custom_clean_taxonomy(
+  input = taxonomy,
+  control = c("PC1", "PC2", "NC1", "NC2"),
+  remove_chloroplast = TRUE)
+
+# Structure the taxonomy data using the custom function
+taxonomy_environments_sites <- custom_structure_taxonomy(
+  input = taxonomy_environments_sites,
+  metadata = metadata %>%
+    # Customise metadata using the custom function
+    format_labels() %>%
+    # Remove positive and negative controls from metadata
+    filter(!(id %in% c("PC1", "PC2", "NC1", "NC2"))),
+  taxa_colour = NULL,
+  select_environment = NULL,
+  select_taxlevel = 2,
+  threshold = 3,
+  include_chloroplast = FALSE,
+  split_pseudomonadota = TRUE)
+
+# Group the samples by "environment", "site", and
+# "taxon" and summarise the data by calculating the
+# mean, standard deviation, and minimum and maximum values
+taxonomy_environments_sites <-
+  taxonomy_environments_sites$longer_metadata_taxonomy %>%
+  group_by(environment, site, taxon) %>%
+  summarise(mean = mean(proportion),
+            sd = sd(proportion),
+            min = min(proportion),
+            max = max(proportion),
+            .groups = "drop")
+
+# Extract the proportions of the most abundant taxa for reporting
+taxonomy_seawater_aq <- taxonomy_environments_sites %>%
+  filter(environment == "Seawater") %>%
+  filter(site == "Aquaculture") %>%
+  arrange(desc(x = mean))
+taxonomy_seawater_ctrl <- taxonomy_environments_sites %>%
+  filter(environment == "Seawater") %>%
+  filter(site == "Control") %>%
+  arrange(desc(x = mean))
+taxonomy_sediment_aq <- taxonomy_environments_sites %>%
+  filter(environment == "Sediment") %>%
+  filter(site == "Aquaculture") %>%
+  arrange(desc(x = mean))
+taxonomy_sediment_ctrl <- taxonomy_environments_sites %>%
+  filter(environment == "Sediment") %>%
+  filter(site == "Control") %>%
+  arrange(desc(x = mean))
+taxonomy_gills_aq <- taxonomy_environments_sites %>%
+  filter(environment == "Gills") %>%
+  filter(site == "Aquaculture") %>%
+  arrange(desc(x = mean))
+
+```
+Differences in community structure between environments and similarities between sites were also evident in the taxonomic composition of the microbial communities (Fig. \@ref(fig:taxonomy-environments-sites)). There were no notable differences between the aquaculture and control sites for the sediment and seawater communities. The seawater microbial community was mainly composed of the bacterial taxa *Alphaproteobacteria* (aquaculture, `r custom_min_max(input = taxonomy_seawater_aq, taxon = "Alphaproteobacteria")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_seawater_ctrl, taxon = "Alphaproteobacteria")`\unit{\percent}), *Gammaproteobacteria* (aquaculture, `r custom_min_max(input = taxonomy_seawater_aq, taxon = "Gammaproteobacteria")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_seawater_ctrl, taxon = "Gammaproteobacteria")`\unit{\percent}), *Bacteroidota* (aquaculture, `r custom_min_max(input = taxonomy_seawater_aq, taxon = "Bacteroidota")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_seawater_ctrl, taxon = "Bacteroidota")`\unit{\percent}), *Cyanobacteriota* (aquaculture, `r custom_min_max(input = taxonomy_seawater_aq, taxon = "Cyanobacteriota")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_seawater_ctrl, taxon = "Cyanobacteriota")`\unit{\percent}), *Verrucomicrobiota* (aquaculture, `r custom_min_max(input = taxonomy_seawater_aq, taxon = "Verrucomicrobiota")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_seawater_ctrl, taxon = "Verrucomicrobiota")`\unit{\percent}), and the archaeal phylum *Thermoplasmatota* (aquaculture, `r custom_min_max(input = taxonomy_seawater_aq, taxon = "Thermoplasmatota")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_seawater_ctrl, taxon = "Thermoplasmatota")`\unit{\percent}). The sediment microbial community differed from the seawater community and was mainly composed of the bacterial taxa *Gammaproteobacteria* (aquaculture, `r custom_min_max(input = taxonomy_sediment_aq, taxon = "Gammaproteobacteria")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_sediment_ctrl, taxon = "Gammaproteobacteria")`\unit{\percent}), *Thermodesulfobacteriota* (aquaculture, `r custom_min_max(input = taxonomy_sediment_aq, taxon = "Thermodesulfobacteriota")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_sediment_ctrl, taxon = "Thermodesulfobacteriota")`\unit{\percent}), *Planctomycetota* (aquaculture, `r custom_min_max(input = taxonomy_sediment_aq, taxon = "Planctomycetota")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_sediment_ctrl, taxon = "Planctomycetota")`\unit{\percent}), *Bacteroidota* (aquaculture, `r custom_min_max(input = taxonomy_sediment_aq, taxon = "Bacteroidota")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_sediment_ctrl, taxon = "Bacteroidota")`\unit{\percent}), *Chloroflexota* (aquaculture, `r custom_min_max(input = taxonomy_sediment_aq, taxon = "Chloroflexota")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_sediment_ctrl, taxon = "Chloroflexota")`\unit{\percent}), members without known relatives within *Bacteria* (aquaculture, `r custom_min_max(input = taxonomy_sediment_aq, taxon = "Bacteria_unclassified")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_sediment_ctrl, taxon = "Bacteria_unclassified")`\unit{\percent}), and the archaeal phylum *Thermoproteota* (aquaculture, `r custom_min_max(input = taxonomy_sediment_aq, taxon = "Thermoproteota")`\unit{\percent}; control, `r custom_min_max(input = taxonomy_sediment_ctrl, taxon = "Thermoproteota")`\unit{\percent}; Fig. \@ref(fig:taxonomy-environments-sites)). In contrast to the taxonomic composition of both the seawater and sediment microbial communities, the gill microbiome was largely composed of the bacterial class *Gammaproteobacteria* (aquaculture, `r custom_min_max(input = taxonomy_gills_aq, taxon = "Gammaproteobacteria")`\unit{\percent}), while the proportions of other high-rank bacterial groups, such as *Alphaproteobacteria* (aquaculture, `r custom_min_max(input = taxonomy_gills_aq, taxon = "Alphaproteobacteria")`\unit{\percent}), *Bacteroidota* (aquaculture, `r custom_min_max(input = taxonomy_gills_aq, taxon = "Bacteroidota")`\unit{\percent}), *Planctomycetota* (aquaculture, `r custom_min_max(input = taxonomy_gills_aq, taxon = "Planctomycetota")`\unit{\percent}), *Bacillota* (aquaculture, `r custom_min_max(input = taxonomy_gills_aq, taxon = "Bacillota")`\unit{\percent}) or members without known relatives within *Bacteria* (aquaculture, `r custom_min_max(input = taxonomy_gills_aq, taxon = "Bacteria_unclassified")`\unit{\percent}), were substantially lower (Fig. \@ref(fig:taxonomy-environments-sites)). The high proportion of *Gammaproteobacteria* in the gill microbiome was observed in individuals at both locations and throughout the study period, while *Alphaproteobacteria*, *Bacteroidota*, and *Bacillota* comprised a notable proportion of the gill microbiome only in a few individuals (Supplementary Fig. \@ref(supp-fig:taxonomy-gills-phylum)).
+
+```{r, results-taxonomy-seawater}
+
+# Clean taxonomy data using the custom function
+taxonomy_seawater <- custom_clean_taxonomy(
+  input = taxonomy,
+  control = c("PC1", "PC2", "NC1", "NC2"),
+  remove_chloroplast = TRUE)
+
+# Filter and structure the taxonomy data using the custom function
+taxonomy_seawater <- custom_structure_taxonomy(
+  input = taxonomy_seawater,
+  metadata = metadata %>%
+    # Customise metadata using the custom function
+    format_labels() %>%
+    # Remove positive and negative controls from metadata
+    filter(!(id %in% c("PC1", "PC2", "NC1", "NC2"))),
+  taxa_colour = NULL,
+  select_environment = "Seawater",
+  select_taxlevel = 2,
+  threshold = 3,
+  include_chloroplast = FALSE,
+  split_pseudomonadota = TRUE)
+
+# Group the samples by "location", "month", "year", and
+# "taxon" and summarise the data by calculating the
+# mean, standard deviation, and minimum and maximum values
+taxonomy_seawater <-
+  taxonomy_seawater$longer_metadata_taxonomy %>%
+  group_by(location, month, year, taxon) %>%
+  summarise(mean = mean(proportion),
+            sd = sd(proportion),
+            min = min(proportion),
+            max = max(proportion),
+            .groups = "drop")
+
+# Extract the proportions of the taxa of interest for reporting
+seawater_themoplasmatota_nov_2020_jan_2021 <- taxonomy_seawater %>%
+  filter(taxon == "Thermoplasmatota") %>%
+  filter((month == "November" & year == "2020") |
+         (month == "January" & year == "2021"))
+seawater_themoplasmatota_other <- taxonomy_seawater %>%
+  filter(taxon == "Thermoplasmatota") %>%
+  filter(!((month == "November" & year == "2020") |
+           (month == "January" & year == "2021")))
+seawater_gammaproteobacteria_lim_may_2021 <- taxonomy_seawater %>%
+  filter(taxon == "Gammaproteobacteria") %>%
+  filter(location == "Lim Bay" & (month == "May" & year == "2021"))
+seawater_gammaproteobacteria_mali_ston_may_2021 <- taxonomy_seawater %>%
+  filter(taxon == "Gammaproteobacteria") %>%
+  filter(location == "Mali Ston Bay" & (month == "May" & year == "2021"))
+seawater_gammaproteobacteria_other <- taxonomy_seawater %>%
+  filter(taxon == "Gammaproteobacteria") %>%
+  filter(!((location == "Lim Bay" & (month == "May" & year == "2021")) |
+           (location == "Mali Ston Bay" & (month == "May" & year == "2021"))))
+seawater_verrucomicrobiota_lim_may_2021 <- taxonomy_seawater %>%
+  filter(taxon == "Verrucomicrobiota") %>%
+  filter(location == "Lim Bay" & (month == "May" & year == "2021"))
+seawater_verrucomicrobiota_mali_ston_may_2021 <- taxonomy_seawater %>%
+  filter(taxon == "Verrucomicrobiota") %>%
+  filter(location == "Mali Ston Bay" & (month == "May" & year == "2021"))
+seawater_verrucomicrobiota_other <- taxonomy_seawater %>%
+  filter(taxon == "Verrucomicrobiota") %>%
+  filter(!((location == "Lim Bay" & (month == "May" & year == "2021")) |
+           (location == "Mali Ston Bay" & (month == "May" & year == "2021"))))
+seawater_alphaproteobacteria_lim_may_2021 <- taxonomy_seawater %>%
+  filter(taxon == "Alphaproteobacteria") %>%
+  filter(location == "Lim Bay" & (month == "May" & year == "2021"))
+seawater_alphaproteobacteria_mali_ston_may_2021 <- taxonomy_seawater %>%
+  filter(taxon == "Alphaproteobacteria") %>%
+  filter(location == "Mali Ston Bay" & (month == "May" & year == "2021"))
+seawater_alphaproteobacteria_other <- taxonomy_seawater %>%
+  filter(taxon == "Alphaproteobacteria") %>%
+  filter(!((location == "Lim Bay" & (month == "May" & year == "2021")) |
+           (location == "Mali Ston Bay" & (month == "May" & year == "2021"))))
+
+```
+
+```{r, results-taxonomy-seawater-themoplasmatota}
+
+# Filter samples of interest from the metadata
+filtered_metadata <- metadata %>%
+  # Customise metadata using the custom function
+  format_labels() %>%
+  # Filter the environment of interest
+  filter(environment == "Seawater") %>%
+  # Filter the sampling month and year of interest
+  filter((month == "November" & year == "2020") |
+         (month == "January" & year == "2021"))
+
+# Structure the taxonomy data and calculate the proportion
+# of the taxa of interest
+marine_group_II <- taxonomy %>%
+  # Select the samples of interest
+  select(c(1 : total, all_of(x = filtered_metadata$id))) %>%
+  # Filter the taxa of interest
+  filter(taxon == "Thermoplasmatota" |
+         taxon == "Marine_Group_II") %>%
+  # Select columns containing taxa names and abundance data
+  # of samples of interest
+  select(taxon,  c(total : last_col()), -total) %>%
+  # Transform the sequence abundance data into a tidy long format
+  pivot_longer(cols = -taxon, names_to = "id",
+               values_to = "seq_no") %>%
+  # Transform the taxa names into a tidy wide format
+  pivot_wider(names_from = taxon, values_from = seq_no) %>%
+  # Group samples by sample IDs
+  group_by(id) %>%
+  # Calculate the proportion
+  summarise(proportion = Marine_Group_II / Thermoplasmatota * 100)
+
+```
+
+```{r, results-taxonomy-sediment}
+
+# Clean taxonomy data using the custom function
+taxonomy_seawater <- custom_clean_taxonomy(
+  input = taxonomy,
+  control = c("PC1", "PC2", "NC1", "NC2"),
+  remove_chloroplast = TRUE)
+
+# Filter and structure the taxonomy data using the custom function
+taxonomy_seawater <- custom_structure_taxonomy(
+  input = taxonomy_seawater,
+  metadata = metadata %>%
+    # Customise metadata using the custom function
+    format_labels() %>%
+    # Remove positive and negative controls from metadata
+    filter(!(id %in% c("PC1", "PC2", "NC1", "NC2"))),
+  taxa_colour = NULL,
+  select_environment = "Sediment",
+  select_taxlevel = 2,
+  threshold = 3,
+  include_chloroplast = FALSE,
+  split_pseudomonadota = TRUE)
+
+# Extract the proportions of the taxa of interest for reporting
+sediment_thermodesulfobacteriota_mali_ston_ctrl_2020 <-
+  taxonomy_seawater$longer_metadata_taxonomy %>%
+  filter(taxon == "Thermodesulfobacteriota") %>%
+  filter(location == "Mali Ston Bay" & site == "Control") %>%
+  filter(year == "2020")
+sediment_thermodesulfobacteriota_mali_ston_ctrl_2021 <-
+  taxonomy_seawater$longer_metadata_taxonomy %>%
+  filter(taxon == "Thermodesulfobacteriota") %>%
+  filter(location == "Mali Ston Bay" & site == "Control") %>%
+  filter(year == "2021")
+sediment_thermodesulfobacteriota_mali_ston_aq <-
+  taxonomy_seawater$longer_metadata_taxonomy %>%
+  filter(taxon == "Thermodesulfobacteriota") %>%
+  filter(location == "Mali Ston Bay" & site == "Aquaculture")
+sediment_thermodesulfobacteriota_lim <-
+  taxonomy_seawater$longer_metadata_taxonomy %>%
+  filter(taxon == "Thermodesulfobacteriota") %>%
+  filter(location == "Lim Bay")
+
+```
+A more detailed analysis of the taxonomic composition of the seawater microbial community revealed temporal patterns for some taxa (Supplementary Fig. \@ref(supp-fig:taxonomy-seawater-sediment-phylum)). For example, the archaeal phylum *Thermoplasmatota* showed a similar pattern at both locations and sites, comprising a higher proportion of the community from November 2020 to January 2021 (`r min(seawater_themoplasmatota_nov_2020_jan_2021$min)`–`r max(seawater_themoplasmatota_nov_2020_jan_2021$max)`\unit{\percent}) than in other months (`r min(seawater_themoplasmatota_other$min)`–`r max(seawater_themoplasmatota_other$max)`\unit{\percent}). Notably, during the months when the proportion of this archaeal phylum was high, almost the entire *Thermoplasmatota* community consisted of Marine Group II (`r min(marine_group_II$proportion)`–`r max(marine_group_II$proportion)`\unit{\percent}). Marked differences between locations were observed in May 2021, when in Lim Bay at both sites, more than half of the microbial community was composed of *Gammaproteobacteria* (`r min(seawater_gammaproteobacteria_lim_may_2021$min)`–`r max(seawater_gammaproteobacteria_lim_may_2021$max)`\unit{\percent}) and *Verrucomicrobiota* (`r min(seawater_verrucomicrobiota_lim_may_2021$min)`–`r max(seawater_verrucomicrobiota_lim_may_2021$max)`\unit{\percent}), which was higher than in Mali Ston Bay at the same time (*Gammaproteobacteria*, `r min(seawater_gammaproteobacteria_mali_ston_may_2021$min)`–`r max(seawater_gammaproteobacteria_mali_ston_may_2021$max)`\unit{\percent}; *Verrucomicrobiota*, `r min(seawater_verrucomicrobiota_mali_ston_may_2021$min)`–`r max(seawater_verrucomicrobiota_mali_ston_may_2021$max)`\unit{\percent}) or in other months (*Gammaproteobacteria*, `r min(seawater_gammaproteobacteria_other$min)`–`r max(seawater_gammaproteobacteria_other$max)`\unit{\percent}; *Verrucomicrobiota*, `r min(seawater_verrucomicrobiota_other$min)`–`r max(seawater_verrucomicrobiota_other$max)`\unit{\percent}). In contrast, *Alphaproteobacteria* constituted a lower proportion of the microbial community in Lim Bay in May 2021 (`r min(seawater_alphaproteobacteria_lim_may_2021$min)`–`r max(seawater_alphaproteobacteria_lim_may_2021$max)`\unit{\percent}) than in Mali Ston Bay at the same time (`r min(seawater_alphaproteobacteria_mali_ston_may_2021$min)`–`r max(seawater_alphaproteobacteria_mali_ston_may_2021$max)`\unit{\percent}) or in other months (`r min(seawater_alphaproteobacteria_other$min)`–`r max(seawater_alphaproteobacteria_other$max)`\unit{\percent}). For the sediment microbial community, a fairly similar taxonomic composition between locations and sites, as well as across sampling months, was observed (Supplementary Fig. \@ref(supp-fig:taxonomy-seawater-sediment-phylum)). The only notable exception was the sediment community in Mali Ston Bay at the control site, where, for example, *Thermodesulfobacteriota* comprised a lower proportion of the community from July to November 2020 (`r min(sediment_thermodesulfobacteriota_mali_ston_ctrl_2020$proportion)`–`r max(sediment_thermodesulfobacteriota_mali_ston_ctrl_2020$proportion)`\unit{\percent}) than from January to May 2021 (`r min(sediment_thermodesulfobacteriota_mali_ston_ctrl_2021$proportion)`–`r max(sediment_thermodesulfobacteriota_mali_ston_ctrl_2021$proportion)`\unit{\percent}). This low proportion of *Thermodesulfobacteriota* was also lower than that observed at the aquaculture site in Mali Ston Bay (`r min(sediment_thermodesulfobacteriota_mali_ston_aq$proportion)`–`r max(sediment_thermodesulfobacteriota_mali_ston_aq$proportion)`\unit{\percent}) and at both sites in Lim Bay (`r min(sediment_thermodesulfobacteriota_lim$proportion)`–`r max(sediment_thermodesulfobacteriota_lim$proportion)`\unit{\percent}). 
+
+```{r, taxonomy-gills-genus, out.width = "70%", fig.align = "center", fig.cap = "(ref:taxonomy-gills-genus)", fig.pos = "t!"}
+
+include_graphics(path = "../results/figures/taxonomy_gills_genus.jpg")
+
+```
+(ref:taxonomy-gills-genus) Relative contribution of the most abundant (\qty{>=10}{\percent}) bacterial and archaeal sequences from the gills of the mussel *M. galloprovincialis* (gill microbiome) classified at the genus taxonomic rank. From July 2020 to May 2021, 10 mussels were collected per sampling month in Lim Bay and Mali Ston Bay. Each bar (individual index) represents an individual mussel. "No Relative" indicates sequences that could not be classified into any taxon, while "NR" (No Relative) next to the name of a taxonomic group refers to sequences that could not be assigned to any known taxon within that group. "NA" (Not Available) indicates samples that were not successfully analysed
+
+```{r, results-taxonomy-gills}
+
+# Clean taxonomy data using the custom function
+taxonomy_gills <- custom_clean_taxonomy(
+  input = taxonomy,
+  control = c("PC1", "PC2", "NC1", "NC2"),
+  remove_chloroplast = TRUE)
+
+# Filter and structure the taxonomy data using the custom function
+taxonomy_gills <- custom_structure_taxonomy(
+  input = taxonomy_gills,
+  metadata = metadata %>%
+    # Customise metadata using the custom function
+    format_labels() %>%
+    # Remove positive and negative controls from metadata
+    filter(!(id %in% c("PC1", "PC2", "NC1", "NC2"))),
+  taxa_colour = NULL,
+  select_environment = "Gills",
+  select_taxlevel = 6,
+  threshold = 10,
+  include_chloroplast = FALSE,
+  split_pseudomonadota = FALSE)
+
+# Group the samples by "location", "month", "year", and
+# "taxon" and summarise the data by calculating the
+# mean, standard deviation, and minimum and maximum values
+summarised_taxonomy_gills <-
+  taxonomy_gills$longer_metadata_taxonomy %>%
+  group_by(location, month, year, taxon) %>%
+  summarise(mean = mean(proportion),
+            sd = sd(proportion),
+            min = min(proportion),
+            max = max(proportion),
+            .groups = "drop")
+
+################################################################################
+# Endozoicomonadaceae (NR)
+################################################################################
+
+# Extract the proportions of Endozoicomonadaceae (NR) for reporting
+gills_endozoicomonadaceae_nr <- summarised_taxonomy_gills %>%
+  filter(taxon == "Endozoicomonadaceae_unclassified")
+gills_endozoicomonadaceae_nr_lim_sep_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Endozoicomonadaceae_unclassified") %>%
+  filter(location == "Lim Bay") %>%
+  filter(month == "September" & year == "2020")
+gills_endozoicomonadaceae_nr_mali_ston_sep_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Endozoicomonadaceae_unclassified") %>%
+  filter(location == "Mali Ston Bay") %>%
+  filter(month == "September" & year == "2020")
+gills_endozoicomonadaceae_nr_lim_jul_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Endozoicomonadaceae_unclassified") %>%
+  filter(location == "Lim Bay") %>%
+  filter(month == "July" & year == "2020")
+gills_endozoicomonadaceae_nr_lim_jan_2021 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Endozoicomonadaceae_unclassified") %>%
+  filter(location == "Lim Bay") %>%
+  filter(month == "January" & year == "2021")
+gills_endozoicomonadaceae_nr_lim_mar_2021 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Endozoicomonadaceae_unclassified") %>%
+  filter(location == "Lim Bay") %>%
+  filter(month == "March" & year == "2021")
+
+# Define the object name for storing statistical results
+wilcox_gills_endozoicomonadaceae_nr_location <- NULL
+
+# Test the differences between locations for each month using the
+# Mann-Whitney U test
+for (i in c("July_2020", "September_2020", "November_2020",
+            "March_2021", "May_2021")) {
+  
+  # Prepare data for testing
+  data <- taxonomy_gills$longer_metadata_taxonomy %>%
+  # Filter the Endozoicomonadaceae (NR)
+  filter(taxon == "Endozoicomonadaceae_unclassified") %>%
+  # Define testing groups
+  unite(col = group, month, year, sep = "_")
+  
+  # Filter the samples from each month from Lim Bay
+  data_x <- data %>%
+    filter(group == i) %>%
+    filter(location == "Lim Bay")
+  # Filter the samples from each month from Mali Ston Bay
+  data_y <- data %>%
+    filter(group == i) %>%
+    filter(location == "Mali Ston Bay")
+  
+  # Perform the Mann-Whitney U test
+  test <- wilcox.test(x = data_x$proportion, y = data_y$proportion,
+                      alternative = "two.sided", paired = FALSE)
+  
+  # Store the statistical results in a tibble
+  test_data <- tribble(
+    # Define the column names for the tibble
+    ~ month_year, ~ n_x, ~ n_y, ~ W, ~ p,
+    # Add rows to the tibble with the Mann-Whitney U test results
+    i, length(data_x$proportion), length(data_y$proportion),
+    test$statistic, test$p.value)
+  
+  # Combine the results of each statistical test in a tibble
+  wilcox_gills_endozoicomonadaceae_nr_location <-
+    bind_rows(wilcox_gills_endozoicomonadaceae_nr_location,
+              test_data)
+  
+}
+
+# Define the object name for storing statistical results
+kruskal_wallis_gills_endozoicomonadaceae_nr_months <- NULL
+  
+# Test differences between months for each location using the
+# Kruskal-Wallis H test
+for (i in c("Lim Bay", "Mali Ston Bay")) {
+  
+  # Prepare data for testing
+  data <- taxonomy_gills$longer_metadata_taxonomy %>%
+  # Filter the Endozoicomonadaceae (NR)
+  filter(taxon == "Endozoicomonadaceae_unclassified") %>%
+  # Remove samples from Mali Ston Bay from January 2021
+  filter(!(location == "Mali Ston Bay" &
+          month == "January" &
+          year == "2021")) %>%
+  # Define testing groups
+  unite(col = group, month, year, sep = "_")
+  
+  # Filter each location
+  data <- data %>%
+    filter(location == i)
+  
+  # Perform the Kruskal-Wallis H test
+  kruskal <- kruskal.test(formula = proportion ~ group,
+                          data = data)
+  
+  # Perform the pairwise Mann-Whitney U test
+  pairwise_wilcox <- pairwise.wilcox.test(
+    x = data$proportion, g = data$group,
+    p.adjust.method = "bonferroni")
+  
+  # Convert the results of the pairwise Mann-Whitney U test
+  # to a tibble
+  pairwise_wilcox <- pairwise_wilcox$p.value %>%
+    # Convert the results to a tibble
+    as_tibble(.name_repair = "check_unique", rownames = NA) %>%
+    # Transfer the testing group names from row names to a column
+    rownames_to_column(var = "rows") %>%
+    # Transform the data into a tidy long format and remove rows
+    # containing NA in the column defined by values_to
+    pivot_longer(cols = -rows, names_to = "columns",
+                 values_to = "p", values_drop_na = TRUE)
+  
+  # Store the statistical results in a tibble
+  test_data <- tribble(
+    # Define the column names for the tibble
+    ~ location, ~ n, ~ kw_H, ~ kw_df, ~ kw_p, ~ mw_p, 
+    # Add rows to the tibble with the Kruskal-Wallis H test and
+    # pairwise Mann-Whitney U test results
+    i, count(x = data, group),
+    kruskal$statistic, kruskal$parameter, kruskal$p.value,
+    pairwise_wilcox)
+  
+  # Combine the statistical results of each location in a tibble
+  kruskal_wallis_gills_endozoicomonadaceae_nr_months <-
+    bind_rows(kruskal_wallis_gills_endozoicomonadaceae_nr_months,
+              test_data)
+  
+}
+
+# Extract statistical values for reporting 
+kruskal_wallis_gills_endozoicomonadaceae_nr_months <-
+  kruskal_wallis_gills_endozoicomonadaceae_nr_months %>%
+  # Filter rows containing statistical results for Lim Bay
+  filter(location == "Lim Bay") %>%
+  # Expand the list-column "mw_p" containing tibbles into rows and columns
+  unnest(cols = mw_p)
+
+################################################################################
+# Endozoicomonas
+################################################################################
+
+# Extract the proportions of Endozoicomonas for reporting
+gills_endozoicomonas_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Endozoicomonas") %>%
+  filter(year == "2020")
+gills_endozoicomonas_2021 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Endozoicomonas") %>%
+  filter(year == "2021")
+
+# Filter the proportions of Endozoicomonas from 2020
+data_x <- taxonomy_gills$longer_metadata_taxonomy %>%
+  filter(taxon == "Endozoicomonas") %>%
+  filter(year == "2020")
+# Filter the proportions of Endozoicomonas from 2021
+data_y <- taxonomy_gills$longer_metadata_taxonomy %>%
+  filter(taxon == "Endozoicomonas") %>%
+  filter(year == "2021")
+
+# Perform the Mann-Whitney U test
+wilcox_gills_endozoicomonas <-
+  wilcox.test(x = data_x$proportion, y = data_y$proportion,
+              alternative = "two.sided", paired = FALSE)
+
+################################################################################
+# "Candidatus Endoecteinascidia"
+################################################################################
+
+# Extract the proportions of "Candidatus Endoecteinascidia" for reporting
+gills_candidatus_endoecteinascidia_jul_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Candidatus_Endoecteinascidia") %>%
+  filter(month == "July" & year == "2020")
+gills_candidatus_endoecteinascidia_other <- summarised_taxonomy_gills %>%
+  filter(taxon == "Candidatus_Endoecteinascidia") %>%
+  filter(!(month == "July" & year == "2020"))
+
+# Define the object name for storing statistical results
+wilcox_gills_candidatus_endoecteinascidia <- NULL
+
+# Test differences between July 2020 and all other months using
+# the Mann-Whitney U test
+for (i in c("September_2020", "November_2020", "January_2021",
+            "March_2021", "May_2021")) {
+  
+  # Prepare data for testing
+  data <- taxonomy_gills$longer_metadata_taxonomy %>%
+  # Filter the "Candidatus Endoecteinascidia"
+  filter(taxon == "Candidatus_Endoecteinascidia") %>%
+  # Define testing groups
+  unite(col = group, month, year, sep = "_")
+  
+  # Filter the samples from July 2020
+  data_x <- data %>%
+    filter(group == "July_2020")
+  # Filter the samples from other months
+  data_y <- data %>%
+    filter(group == i)
+  
+  # Perform the Mann-Whitney U test
+  test <- wilcox.test(x = data_x$proportion, y = data_y$proportion,
+                      alternative = "two.sided", paired = FALSE)
+  
+  # Store the statistical results in a tibble
+  test_data <- tribble(
+    # Define the column names for the tibble
+    ~ rows, ~ columns, ~ n_x, ~ n_y, ~ W, ~ p,
+    # Add rows to the tibble with the Mann-Whitney U test results
+    "July_2020", i,
+    length(data_x$proportion),
+    length(data_y$proportion),
+    test$statistic, test$p.value)
+  
+  # Combine the results of each statistical test in a tibble
+  wilcox_gills_candidatus_endoecteinascidia <-
+    bind_rows(wilcox_gills_candidatus_endoecteinascidia,
+              test_data)
+  
+}
+
+# Adjust the p-values
+wilcox_gills_candidatus_endoecteinascidia <-
+  wilcox_gills_candidatus_endoecteinascidia %>%
+  mutate(p.adj = p.adjust(p = p, method = "bonferroni"))
+
+################################################################################
+# Vibrio
+################################################################################
+
+# Extract the proportions of Vibrio for reporting
+gills_vibrio_lim_sep_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Vibrio") %>%
+  filter(location == "Lim Bay") %>%
+  filter(month == "September" & year == "2020")
+gills_vibrio_mali_ston_sep_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Vibrio") %>%
+  filter(location == "Mali Ston Bay") %>%
+  filter(month == "September" & year == "2020")
+gills_vibrio_other <- summarised_taxonomy_gills %>%
+  filter(taxon == "Vibrio") %>%
+  filter(!(month == "September" & year == "2020"))
+
+# Define the object name for storing statistical results
+wilcox_gills_vibrio <- NULL
+
+# Test differences between samples from Lim Bay from September 2020
+# and samples from all other months and locations using the
+# Mann-Whitney U test (samples from Mali Ston Bay from January 2021
+# are excluded from testing)
+for (i in c("Lim_Bay_July_2020", "Lim_Bay_November_2020",
+            "Lim_Bay_January_2021", "Lim_Bay_March_2021",
+            "Lim_Bay_May_2021", "Mali_Ston_Bay_July_2020",
+            "Mali_Ston_Bay_September_2020", "Mali_Ston_Bay_November_2020",
+            "Mali_Ston_Bay_March_2021", "Mali_Ston_Bay_May_2021")) {
+  
+  # Prepare data for testing
+  data <- taxonomy_gills$longer_metadata_taxonomy %>%
+  # Filter the Vibrio
+  filter(taxon == "Vibrio") %>%
+  # Define testing groups
+  unite(col = group, location, month, year, sep = "_") %>%
+  # Replace spaces with underscores in group names
+  mutate(group = str_replace_all(string = group,
+                                 pattern = " ",
+                                 replacement = "_"))
+  
+  # Filter the samples from Lim Bay from September 2020
+  data_x <- data %>%
+    filter(group == "Lim_Bay_September_2020")
+  # Filter the samples from other months and locations
+  data_y <- data %>%
+    filter(group == i)
+  
+  # Perform the Mann-Whitney U test
+  test <- wilcox.test(x = data_x$proportion, y = data_y$proportion,
+                      alternative = "two.sided", paired = FALSE)
+  
+  # Store the statistical results in a tibble
+  test_data <- tribble(
+    # Define the column names for the tibble
+    ~ rows, ~ columns, ~ n_x, ~ n_y, ~ W, ~ p,
+    # Add rows to the tibble with the Mann-Whitney U test results
+    "Lim_Bay_September_2020", i,
+    length(data_x$proportion),
+    length(data_y$proportion),
+    test$statistic, test$p.value)
+  
+  # Combine the results of each statistical test in a tibble
+  wilcox_gills_vibrio <-
+    bind_rows(wilcox_gills_vibrio,
+              test_data)
+  
+}
+
+# Adjust the p-values
+wilcox_gills_vibrio <- wilcox_gills_vibrio %>%
+  mutate(p.adj = p.adjust(p = p, method = "bonferroni"))
+
+################################################################################
+# Vibrionaceae (NR)
+################################################################################
+
+# Extract the proportions of Vibrionaceae (NR) for reporting
+gills_vibrionaceae_nr_lim_sep_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Vibrionaceae_unclassified") %>%
+  filter(location == "Lim Bay") %>%
+  filter(month == "September" & year == "2020")
+gills_vibrionaceae_nr_lim_nov_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Vibrionaceae_unclassified") %>%
+  filter(location == "Lim Bay") %>%
+  filter(month == "November" & year == "2020")
+gills_vibrionaceae_nr_mali_ston_sep_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Vibrionaceae_unclassified") %>%
+  filter(location == "Mali Ston Bay") %>%
+  filter(month == "September" & year == "2020")
+gills_vibrionaceae_nr_mali_ston_nov_2020 <- summarised_taxonomy_gills %>%
+  filter(taxon == "Vibrionaceae_unclassified") %>%
+  filter(location == "Mali Ston Bay") %>%
+  filter(month == "November" & year == "2020")
+gills_vibrionaceae_nr_other <- summarised_taxonomy_gills %>%
+  filter(taxon == "Vibrionaceae_unclassified") %>%
+  filter(!((month == "September" & year == "2020") |
+           (month == "November" & year == "2020")))
+
+# Define the object name for storing statistical results
+wilcox_gills_vibrionaceae_nr_lim_sep_2020 <- NULL
+
+# Test differences between samples from Lim Bay from September 2020
+# and samples from all other months and locations using the Mann-Whitney
+# U test (samples from Mali Ston Bay from January 2021 are excluded from
+# testing)
+for (i in c("Lim_Bay_July_2020", "Lim_Bay_November_2020",
+            "Lim_Bay_January_2021", "Lim_Bay_March_2021",
+            "Lim_Bay_May_2021", "Mali_Ston_Bay_July_2020",
+            "Mali_Ston_Bay_September_2020", "Mali_Ston_Bay_November_2020",
+            "Mali_Ston_Bay_March_2021", "Mali_Ston_Bay_May_2021")) {
+  
+  # Prepare data for testing
+  data <- taxonomy_gills$longer_metadata_taxonomy %>%
+  # Filter the Vibrionaceae (NR)
+  filter(taxon == "Vibrionaceae_unclassified") %>%
+  # Define testing groups
+  unite(col = group, location, month, year, sep = "_") %>%
+  # Replace spaces with underscores in group names
+  mutate(group = str_replace_all(string = group,
+                                 pattern = " ",
+                                 replacement = "_"))
+  
+  # Filter the samples from Lim Bay from September 2020
+  data_x <- data %>%
+    filter(group == "Lim_Bay_September_2020")
+  # Filter the samples from other months and locations
+  data_y <- data %>%
+    filter(group == i)
+  
+  # Perform the Mann-Whitney U test
+  test <- wilcox.test(x = data_x$proportion, y = data_y$proportion,
+                      alternative = "two.sided", paired = FALSE)
+  
+  # Store the statistical results in a tibble
+  test_data <- tribble(
+    # Define the column names for the tibble
+    ~ rows, ~ columns, ~ n_x, ~ n_y, ~ W, ~ p,
+    # Add rows to the tibble with the Mann-Whitney U test results
+    "Lim_Bay_September_2020", i,
+    length(data_x$proportion),
+    length(data_y$proportion),
+    test$statistic, test$p.value)
+  
+  # Combine the results of each statistical test in a tibble
+  wilcox_gills_vibrionaceae_nr_lim_sep_2020 <-
+    bind_rows(wilcox_gills_vibrionaceae_nr_lim_sep_2020,
+              test_data)
+  
+}
+
+# Adjust the p-values
+wilcox_gills_vibrionaceae_nr_lim_sep_2020 <-
+  wilcox_gills_vibrionaceae_nr_lim_sep_2020 %>%
+  mutate(p.adj = p.adjust(p = p, method = "bonferroni"))
+
+# Define the object name for storing statistical results
+wilcox_gills_vibrionaceae_nr_lim_nov_2020 <- NULL
+
+# Test differences between samples from Lim Bay from November 2020
+# and samples from all other months and locations using the Mann-Whitney
+# U test (samples from Mali Ston Bay from January 2021 are excluded from
+# testing)
+for (i in c("Lim_Bay_July_2020", "Lim_Bay_September_2020",
+            "Lim_Bay_January_2021", "Lim_Bay_March_2021",
+            "Lim_Bay_May_2021", "Mali_Ston_Bay_July_2020",
+            "Mali_Ston_Bay_September_2020", "Mali_Ston_Bay_November_2020",
+            "Mali_Ston_Bay_March_2021", "Mali_Ston_Bay_May_2021")) {
+  
+  # Prepare data for testing
+  data <- taxonomy_gills$longer_metadata_taxonomy %>%
+  # Filter the Vibrionaceae (NR)
+  filter(taxon == "Vibrionaceae_unclassified") %>%
+  # Define testing groups
+  unite(col = group, location, month, year, sep = "_") %>%
+  # Replace spaces with underscores in group names
+  mutate(group = str_replace_all(string = group,
+                                 pattern = " ",
+                                 replacement = "_"))
+  
+  # Filter the samples from Lim Bay from November 2020
+  data_x <- data %>%
+    filter(group == "Lim_Bay_November_2020")
+  # Filter the samples from other months and locations
+  data_y <- data %>%
+    filter(group == i)
+  
+  # Perform the Mann-Whitney U test
+  test <- wilcox.test(x = data_x$proportion, y = data_y$proportion,
+                      alternative = "two.sided", paired = FALSE)
+  
+  # Store the statistical results in a tibble
+  test_data <- tribble(
+    # Define the column names for the tibble
+    ~ rows, ~ columns, ~ n_x, ~ n_y, ~ W, ~ p,
+    # Add rows to the tibble with the Mann-Whitney U test results
+    "Lim_Bay_November_2020", i,
+    length(data_x$proportion),
+    length(data_y$proportion),
+    test$statistic, test$p.value)
+  
+  # Combine the results of each statistical test in a tibble
+  wilcox_gills_vibrionaceae_nr_lim_nov_2020 <-
+    bind_rows(wilcox_gills_vibrionaceae_nr_lim_nov_2020,
+              test_data)
+  
+}
+
+# Adjust the p-values
+wilcox_gills_vibrionaceae_nr_lim_nov_2020 <-
+  wilcox_gills_vibrionaceae_nr_lim_nov_2020 %>%
+  mutate(p.adj = p.adjust(p = p, method = "bonferroni"))
+
+# Combine the results of each statistical test in a tibble
+# (Lim Bay, September 2020 and Lim Bay, November 2020)
+wilcox_gills_vibrionaceae_nr <-
+  bind_rows(wilcox_gills_vibrionaceae_nr_lim_sep_2020,
+            wilcox_gills_vibrionaceae_nr_lim_nov_2020)
+```
+Because, as previously mentioned, the gill microbiome of most *M. galloprovincialis* mussels, except for a few individuals, was largely composed of *Gammaproteobacteria*, no differences in community composition between locations or sampling months were identified (Supplementary Fig. \@ref(supp-fig:taxonomy-gills-phylum)). However, when the taxonomic composition was analysed at lower taxonomic ranks, such as family and genus, differences between locations and sampling months were observed (Fig. \@ref(fig:taxonomy-gills-genus)). Although high variability in the taxonomic composition of each individual's gill microbiome was noted, low-rank gammaproteobacterial groups present at both locations and throughout the study period, as well as groups specific to certain locations or months, were identified. Members without known relatives within *Endozoicomonadaceae* were present in mussel gills at both locations and throughout the study period, showing a high degree of variability between individuals (`r min(gills_endozoicomonadaceae_nr$min)`–`r max(gills_endozoicomonadaceae_nr$max)`\unit{\percent}; Fig. \@ref(fig:taxonomy-gills-genus)). When differences in the proportion of this group between individuals from different locations were tested, the only significant difference was its higher proportion in the gill microbiome of individuals from Mali Ston Bay (`r gills_endozoicomonadaceae_nr_mali_ston_sep_2020$min`–`r gills_endozoicomonadaceae_nr_mali_ston_sep_2020$max`\unit{\percent}) compared to those from Lim Bay (`r gills_endozoicomonadaceae_nr_lim_sep_2020$min`–`r gills_endozoicomonadaceae_nr_lim_sep_2020$max`\unit{\percent}) in September 2020 (Mann–Whitney *U* test, *p* `r filter(.data = wilcox_gills_endozoicomonadaceae_nr_location, month_year == "September_2020")$p %>% format_p_values(space = TRUE)`). In addition, significant differences between months were observed only in Lim Bay (Kruskal–Wallis *H* test, *p* `r format_p_values(x = max(kruskal_wallis_gills_endozoicomonadaceae_nr_months$kw_p), space = TRUE)`), specifically between July 2020 (`r gills_endozoicomonadaceae_nr_lim_jul_2020$min`–`r gills_endozoicomonadaceae_nr_lim_jul_2020$max`\unit{\percent}) and January 2021 (`r gills_endozoicomonadaceae_nr_lim_jan_2021$min`–`r gills_endozoicomonadaceae_nr_lim_jan_2021$max`\unit{\percent}), July 2020 and March 2021 (`r gills_endozoicomonadaceae_nr_lim_mar_2021$min`–`r gills_endozoicomonadaceae_nr_lim_mar_2021$max`\unit{\percent}), and between September 2020 (`r gills_endozoicomonadaceae_nr_lim_sep_2020$min`–`r gills_endozoicomonadaceae_nr_lim_sep_2020$max`\unit{\percent}) and January 2021 (pairwise Mann–Whitney *U* test, all stated comparisons *p* `r filter(.data = kruskal_wallis_gills_endozoicomonadaceae_nr_months, p < 0.05)$p %>% max() %>% format_p_values(space = TRUE)`). Interestingly, *Endozoicomonas*, a member of the family *Endozoicomonadaceae*, was almost absent in the gill microbiome at both locations from July to November 2020 (`r min(gills_endozoicomonas_2020$min)`–`r max(gills_endozoicomonas_2020$max)`\unit{\percent}), but from January to May 2021 it comprised a substantial proportion of the microbiome in many individuals from both locations (`r min(gills_endozoicomonas_2021$min)`–`r max(gills_endozoicomonas_2021$max)`\unit{\percent}; Mann–Whitney *U* test, *p* `r format_p_values(x = wilcox_gills_endozoicomonas$p.value, space = TRUE)`; Fig. \@ref(fig:taxonomy-gills-genus)). Another taxonomic group showing specificity to a certain period was "*Candidatus* Endoecteinascidia", which comprised a substantial proportion of the gill microbiome in many individuals in July 2020 (`r min(gills_candidatus_endoecteinascidia_jul_2020$min)`–`r max(gills_candidatus_endoecteinascidia_jul_2020$max)`\unit{\percent}), while in other months the microbiomes of only a few individuals contained a higher proportion of this group (`r min(gills_candidatus_endoecteinascidia_other$min)`–`r max(gills_candidatus_endoecteinascidia_other$max)`\unit{\percent}; Fig. \@ref(fig:taxonomy-gills-genus)). These differences in proportions of "*Candidatus* Endoecteinascidia" between July 2020 and all other months were supported by the Mann–Whitney *U* test (all *p* `r format_p_values(x = max(wilcox_gills_candidatus_endoecteinascidia$p.adj), space = TRUE)`). *Vibrio* showed differences in the proportion of the gill microbiome between locations and sampling months (Fig. \@ref(fig:taxonomy-gills-genus)). In September 2020, higher proportions of this group were observed in gill microbiomes from Lim Bay (`r gills_vibrio_lim_sep_2020$min`–`r gills_vibrio_lim_sep_2020$max`\unit{\percent}) than from Mali Ston Bay (`r gills_vibrio_mali_ston_sep_2020$min`–`r gills_vibrio_mali_ston_sep_2020$max`\unit{\percent}). In addition, these proportions in September 2020 were also higher than those observed in all other months at either location (`r min(gills_vibrio_other$min)`–`r max(gills_vibrio_other$max)`\unit{\percent}). These differences in the proportion of the gill microbiome between individuals from Lim Bay in September 2020 and individuals from all other months at either location were supported by the Mann–Whitney *U* test (all *p* `r format_p_values(x = max(wilcox_gills_vibrio$p.adj), space = TRUE)`; samples from Mali Ston Bay from January 2021 were excluded due to the limited number of samples). Furthermore, 
+members without known relatives within *Vibrionaceae* also showed differences in the proportion of the gill microbiome between locations and sampling months (Fig. \@ref(fig:taxonomy-gills-genus)). Higher proportions of this group were observed in individuals from Lim Bay in September (`r gills_vibrionaceae_nr_lim_sep_2020$min`–`r gills_vibrionaceae_nr_lim_sep_2020$max`\unit{\percent}) and November (`r gills_vibrionaceae_nr_lim_nov_2020$min`–`r gills_vibrionaceae_nr_lim_nov_2020$max`\unit{\percent}) 2020 than in individuals from Mali Ston Bay in the same months (September 2020, `r gills_vibrionaceae_nr_mali_ston_sep_2020$min`–`r gills_vibrionaceae_nr_mali_ston_sep_2020$max`\unit{\percent}; November 2020, `r gills_vibrionaceae_nr_mali_ston_nov_2020$min`–`r gills_vibrionaceae_nr_mali_ston_nov_2020$max`\unit{\percent}). In addition, these proportions in individuals from Lim Bay from September to November 2020 were also higher than those observed in individuals from all other months at either location (`r min(gills_vibrionaceae_nr_other$min)`–`r max(gills_vibrionaceae_nr_other$max)`\unit{\percent}). The similarities in proportions of this group in individuals from Lim Bay in September and November 2020 and the differences from individuals from all other months at either location were supported by the Mann–Whitney *U* test (all *p* `r filter(.data = wilcox_gills_vibrionaceae_nr, columns != "Lim_Bay_September_2020" & columns != "Lim_Bay_November_2020")$p.adj %>% max() %>% format_p_values(space = TRUE)`; samples from Mali Ston Bay from January 2021 were excluded due to the limited number of samples).
+\newpage
+
+# Discussion
+
+The mussel *M. galloprovincialis* is a filter-feeding animal, meaning that, as in most bivalve species, its gills are used for both gas exchange and feeding [@Gosling2003a]. As the gills are in constant contact with seawater and may be influenced by sediment resuspension, it is advisable to compare the gill microbiome with the microbial communities in the surrounding seawater and sediment. In this study, the observed number of OTUs, as well as the exponential of the Shannon diversity index and the Inverse Simpson diversity index, were significantly lower for the gill microbiome than for the seawater and sediment microbial communities. However, when the total number of OTUs is considered using calculated richness estimators, the difference in the number of OTUs between the gill microbiome and the seawater microbial community is no longer evident. It appears that the alpha diversity of the *M. galloprovincialis* gill microbiome is similar to that of the microbial community in ambient seawater, or at least the differences are not substantial. A study on the gill microbiome of the same species reported differences in alpha diversity between the gill microbiome and the microbial community in the surrounding seawater [@Zardinoni2024], while another study found no differences between the microbial community in the surrounding seawater and the microbiome of various body parts of this species, including the gills [@Musella2020]. In any case, the alpha diversity of the gill microbiome and seawater microbial community was substantially lower than that of the sediment community. Similarly, comparisons of the gut and shell microbiome of the eastern oyster, *Crassostrea virginica*, with the sediment microbial community also found lower alpha diversity in the oyster's gut and shell microbiome than in the sediment community [@Arfken2017]. The alpha diversity of the gill microbiome did not differ between the two locations, Lim Bay and Mali Ston Bay, consistent with a study comparing the gill microbiome of *M. galloprovincialis* between nearby locations [@Zardinoni2024], as well as another study comparing its whole microbiome between more distant geographic locations [@Peruzzo2026]. Richness estimators were also the only alpha diversity parameters showing significant differences in the gill microbiome between sampling months, although the only significant difference was between January and March 2021. Overall, it appears that the mussel *M. galloprovincialis* has a gill microbiome with lower alpha diversity than the surrounding sediment microbial community and minimal difference from the community in the surrounding seawater. In addition, its gill microbiome appears to be stable in terms of alpha diversity, showing minimal variation between different sampling locations and months.
+
+Although alpha diversity parameters did not indicate a strong difference between the gill microbiome of *M. galloprovincialis* and the microbial community in the surrounding seawater, Bray–Curtis dissimilarity calculated from OTU abundances revealed a clear separation between the gill microbiome and the communities in both the surrounding seawater and sediment. This finding, that the mussel *M. galloprovincialis* harbours a gill microbiome with a community structure distinct from that of the microbial community in ambient seawater, is consistent with studies reporting differences between the microbiome of this species' various body parts, such as the gut, gills, and haemolymph, and the community in the surrounding seawater [@Akter2023; @Musella2020; @Palladino2023; @Vezzulli2018; @Zardinoni2024]. Furthermore, the difference between the gill microbiome of this species and the sediment microbial community is similar to the observed distinction in community structure between the gut and shell microbiome of the eastern oyster and the microbial community in the surrounding sediment [@Arfken2017]. Comparison of the overall structure of the *M. galloprovincialis* gill microbiome at the OTU level in this study did not reveal significant differentiation between the two locations, Lim Bay and Mali Ston Bay, despite their considerable geographic distance. This agrees with a study of the gill microbiome of the same species that also did not show variation between locations [@Zardinoni2024]. In contrast, the structure of the gut microbiome of the same species varied with geographic location [@delRio-Lavin2023; @Palladino2023], indicating a greater influence of local conditions on the gut than on the gill microbiome, possibly due to variation in the origin of food, which also includes microbes, with geographic location and the potential involvement of the gut microbiota in food digestion [@Gosling2003c; @Pierce2018]. Interestingly, the structure of the overall microbiome of the mussel *M. galloprovincialis* transported from one geographic location to another is initially different and converges towards that of native mussels, highlighting the influence of local conditions, the possible high contribution of the gut microbiota to the overall microbiome, and the importance of assessing tissue-specific microbiomes [@Peruzzo2026]. Furthermore, in this study, the structure of the gill microbiome at the OTU level showed a separation of microbiomes from July 2020, from September 2020 to January 2021, and from March to May 2021, indicating the presence of microbiome taxa with temporal changes. Similarly, studies on the overall microbiome of the mussel *M. galloprovincialis* [@Peruzzo2026], as well as on the gut microbiome [@Akter2023; @Palladino2023; @Wathsala2021], also indicated temporal microbiome changes. In contrast, a study of the gill microbiome of the same species did not reveal any temporal changes, possibly due to the fewer sampling months included in that study [@Zardinoni2024].
+
+Consistent with the Bray–Curtis dissimilarities calculated from OTU abundances, the taxonomic analysis also revealed a clear distinction between the gill microbiome of the mussel *M. galloprovincialis* and the communities in the surrounding seawater and sediment. The high-rank microbial taxa detected in the surrounding seawater, as well as the higher proportion of *Thermoplasmatota* Marine Group II during the colder period of the year, are typical of seawater microbial communities in the Adriatic Sea [@Korlevic2015; @Korlevic2022]. Similarly, the high-rank microbial taxa detected in the surrounding sediment have previously been found in surface sediments of the Adriatic Sea [@Markovski2022; @Ramljak2024]. At higher taxonomic ranks, the distinction between the gill microbiome and the microbial communities in the surrounding seawater and sediment was mainly due to the high proportion of *Gammaproteobacteria* in the gill microbiome. The high proportion of taxa belonging to this class in the gill microbiome has also been observed in other studies focusing on the gills of the mussel *M. galloprovincialis* [@Musella2020; @Zardinoni2024]. Because of the high proportion of *Gammaproteobacteria* in the gill microbiome, no differences between the two locations, Lim Bay and Mali Ston Bay, or between sampling months were observed. However, when the analysis was performed at lower taxonomic ranks, such as family and genus, both resident taxa, present at both locations and throughout the study period, and transient taxa, specific to certain locations or months, were identified.
+
+Although members without known relatives within *Endozoicomonadaceae* showed high variability in their proportion within the gill microbiome of *M. galloprovincialis* between individuals, they were detected in all analysed mussels and exhibited minimal differences in proportion between mussels from different locations or months. This indicates that this group is resident in the gills of *M. galloprovincialis*. The family *Endozoicomonadaceae* is known to form associations with many marine benthic invertebrates, including bivalves, and with some fish [@daSilva2025; @Munoz-Martinez2026; @Schill2017]. Furthermore, members of this family have been detected in the gills of the blue mussel, *Mytilus edulis*, a bivalve species closely related to *M. galloprovincialis* [@Schill2017; @Kijewski2011]. Genomic analysis suggests that members of this family can rapidly adapt and transition between free-living and host-associated lifestyles, resulting in host–microbe relationships that can range from mutualistic to parasitic depending on the host species and ecological context [@daSilva2025]. The presence of this group in all analysed mussels in the present study suggests a mutualistic interaction between its members and *M. galloprovincialis*. However, as this group consists of sequences without currently known relatives within this family, it is possible that novel *Endozoicomonadaceae* taxa exhibiting temporal and spatial dynamics and showing different interactions with this host species will be described in the future. Indeed, in the present study, *Endozoicomonas*, the type genus for this family [@Kurahashi2007], was almost absent from the gill microbiome at both locations from July to November 2020. However, from January to May 2021, it comprised a substantial proportion of the microbiome in many individuals from both locations, indicating the transient nature of this taxon and possibly a different host–microbe interaction. Similarly, "*Candidatus* Endoecteinascidia" comprised a substantial proportion of the gill microbiome in many mussels from both locations in July 2020, while in other months, only a few individuals' microbiomes contained a higher proportion of this group, indicating its transient nature. This group has been described as an endosymbiont of the ascidian *Ecteinascidia turbinata* [@Moss2003]. Interestingly, genome analysis revealed an extreme reduction of the genome in this group and the presence of biosynthetic genes required for the production of ecteinascidin 743 (ET-743), a chemotherapeutic natural product thought to be pivotal for the interaction with this tunicate host [@Kehr2015; @Rath2011; @Schofield2015]. These data suggest that members of this group form a mutualistic relationship with the host, so at present, it is difficult to explain the observed transient nature of "*Candidatus* Endoecteinascidia" in the gill microbiome of *M. galloprovincialis* observed in this study. It is possible that the host of this group is not the mussel but an ascidian biofouling species, and its detection is due to the proximity of the ascidians to the mussel gills. Indeed, ascidians are important members of the biofouling community on various aquaculture bivalve species, including *M. galloprovincialis* [@Alvanou2024], and their presence was also observed in aquaculture farms in the northern Adriatic Sea, including Lim Bay [@Majnaric2022]. In addition, ascidians in the Mediterranean Sea, including the genus *Ecteinascidia*, have shown marked seasonality of growth on artificial plates deployed next to a bivalve aquaculture facility [@Casso2018], which could explain the observed higher proportion of its endosymbiont "*Candidatus* Endoecteinascidia" in the gill microbiome during the summer peak in July 2020 compared to other sampling months.
+
+Groups that were transient in nature and also differed between the two aquaculture locations, Lim Bay and Mali Ston Bay, both belonged to the family *Vibrionaceae* and included *Vibrio* as well as members without known relatives within *Vibrionaceae*. Members of the family *Vibrionaceae* are often found in the microbiome of various bivalve species, including *M. galloprovincialis* [@delRio-Lavin2023; @Munoz-Martinez2026; @Musella2020; @Peruzzo2026; @Vezzulli2018], forming relationships with their bivalve hosts that can range from mutualistic to neutral or parasitic [@Destoumieux-Garzon2020]. The preference of *Vibrio* and members without known relatives within *Vibrionaceae* for the period from September to November 2020, as well as for the aquaculture location in Lim Bay, observed in this study, suggests a neutral or parasitic interaction with *M. galloprovincialis*. The higher proportion of *Vibrionaceae* observed during this period is consistent with a study using culture-dependent methods focusing on the gills of *M. galloprovincialis*, sampled during the same period and at the same aquaculture locations, which revealed a positive correlation between total *Vibrio* counts and temperature (L. Perić, personal communication). This is not surprising, as many species of *Vibrio* are known to thrive at higher temperatures [@Destoumieux-Garzon2020; @Sheikh2022]. The observed difference between Lim Bay and Mali Ston Bay could be due to distinct hydrological conditions and productivity at these locations, resulting in greater accumulation of organic matter and microbial growth in Lim Bay [@Bosak2013; @Matek2024; @Silovic2012a; @Skejic2015]. Indeed, all described *Vibrio* spp. are obligate heterotrophs that rely on organic matter as a carbon source [@Zhang2018a].
+
+# Conclusions
+
+Because studies assessing the microbiome of bivalve species, including the mussel *M. galloprovincialis*, have focused on gut tissue [@Akter2023; @delRio-Lavin2023; @Palladino2023; @Salloum2025; @Vezzulli2018; @Wathsala2021], knowledge of the temporal and spatial dynamics of microbiomes from other body parts of this important aquaculture species remains limited. This study analysed a comprehensive set of gill microbiomes and compared them with microbial communities in the surrounding seawater and sediment to address this gap. Overall, the structure of the gill microbiome of *M. galloprovincialis* at the OTU level was distinct from the microbial communities in the surrounding seawater and sediment, and did not differ between the aquaculture locations, Lim Bay and Mali Ston Bay. However, the structure of the gill microbiome varied between sampling months, suggesting temporal dynamics. Furthermore, taxonomic analysis revealed the presence of both resident and transient microbial taxa in the gill microbiome. Members without known relatives within *Endozoicomonadaceae* were observed in the gill microbiome of mussels from both locations and throughout the study period, indicating their resident nature. In contrast, *Endozoicomonas*, "*Candidatus* Endoecteinascidia", *Vibrio*, and members without known relatives within *Vibrionaceae* appeared to be transient, as they were observed only in certain months. To clarify the nature of the interaction between these taxa and the *M. galloprovincialis* host, future studies using methods that allow microbial cell tissue localisation and functional characterisation are required.
+\newpage
+
+# Acknowledgements
+
+We thank the Department of Applied Ecology, University of Dubrovnik, and the Centre for Marine Research, Ruđer Bošković Institute, for providing access to laboratory facilities. We also thank the operator of the R/V Burin and the staff of Istrida d. o. o. for their cooperation and assistance with sampling.
+
+# Author contributions
+
+MK and LP conceived and designed the study. LP managed the project and secured funding. DK, IVS, KO, VK, JB, SBČ, and VN conducted fieldwork and collected samples. MK and MM processed the samples and performed molecular analyses. MK conducted the bioinformatic analyses and statistical tests, and wrote the first draft of the manuscript. All authors reviewed and approved the final manuscript.
+
+# Funding
+
+This study was funded by the Croatian Science Foundation through the BEST ADRIA project (project number IP-2019-04-1956) and the Young Researchers' Career Development Project—Training New Doctoral Students (project number DOK-2021-02-7567, awarded to LP for KO).
+
+# Data availability
+
+Nucleotide sequences of the V4 region of the 16S rRNA gene obtained in this study have been deposited in the European Nucleotide Archive at EMBL-EBI under accession number PRJEB107277 (<https://www.ebi.ac.uk/ena/browser/view/PRJEB107277>). The detailed analysis procedure, including the R Markdown file for this article, is available on GitHub (<https://github.com/MicrobesRovinj/Korlevic_MusselMicrobiome_MicrobEcol_2026>) and Zenodo (<https://doi.org>).
+\newpage
+
+# References
+
+<!-- Reduce spacing between bibliography entries with entry-spacing="0". -->
+::: {#refs entry-spacing="0"}
+:::
+\newpage
+

@@ -1,0 +1,900 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12 pt,
+]{article}
+\usepackage{xcolor}
+\usepackage[margin = 1.0in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Font
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Set font encoding to T1 (8-bit encoding, 256 glyphs) 
+% (improved text handling, especially with non-English
+% languages and text containing special characters)
+\usepackage[T1]{fontenc}
+
+% Set font to URW Nimbus Roman
+% (Times New Roman alternative)
+\usepackage{mathptmx}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Typsetting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include the package containing commands for page
+% orientation
+\usepackage{pdflscape}
+% Create a new custom command for starting a landscape block
+\newcommand{\blandscape}{\begin{landscape}}
+% Create a new custom command for ending a landscape block
+\newcommand{\elandscape}{\end{landscape}}
+
+% Include package providing fine-tuned typographic
+% enhancements
+\usepackage{microtype}
+
+% Suppress hyphenation
+\usepackage[none]{hyphenat}
+
+% Include package for setting spacing between lines
+\usepackage{setspace}
+% Set line spacing
+\doublespacing
+
+% Indent first paragraph of each section (including
+% chapters)
+\usepackage{indentfirst}
+
+% Set vertical space between paragraphs
+\setlength{\parskip}{1em}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Line numbers
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include package for line numbering
+\usepackage{lineno}
+% Set font style and size of line numbers
+\renewcommand{\linenumberfont}{\normalfont\tiny}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Lists
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include package to customise the appearance of itemised
+% lists
+\usepackage{enumitem}
+
+% Remove extra vertical space that is added above and below
+% itemize and enumerate lists
+\setlist{nosep}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Figures and tables
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include package enhancing figure and table placement
+% (provides "H" placement specifier forcing the float to
+% appear exactly where it is defined)
+\usepackage{float}
+
+% Include package used to create tables with cells spanning
+% multiple rows
+\usepackage{multirow}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Captions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Define the separator between the label and the caption
+% text and make the label bold
+\usepackage[labelsep=space, labelfont=bf]{caption}
+% Set caption text to be justified
+\captionsetup{justification=justified}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Uniform Resource Locators (URLs)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include the package to handle URLs
+\usepackage{url}
+
+% Redefine the commands that specify where line breaks can
+% occur in URLs (\UrlBreaks has a lower penalty, i.e. it is
+% more easily chosen, and does not break within a repeating
+% sequence)
+\renewcommand\UrlBreaks{\do\/\do\:\do\.\do\-}
+\renewcommand\UrlBigBreaks{\do\/\do\:\do\.\do\-}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Referencing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include the package xr (external references) to allow
+% referencing labels from another file
+\usepackage{xr}
+% Specify the name of the file used for additional
+% referencing and define the prefix for the labels
+% from the external document
+\externaldocument[supp-]{supplementary}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Measurement units
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include the package that facilitates consistent formatting
+% of scientific units and numbers
+\usepackage{siunitx}
+% Define unit \molar as moles per cubic decimetre
+\DeclareSIUnit\molar{\mole\per\cubic\deci\metre}
+% Define unit \Molar as small caps "M"
+\DeclareSIUnit\Molar{\textsc{m}}
+% Define unit \cells as the text "cells"
+\DeclareSIUnit\cells{\text{cells}}
+% Define unit \litre as lower case "l"
+\DeclareSIUnit\litre{l}
+% Define unit \vV as v/v
+\DeclareSIUnit{\vV}{v/v}
+% Define unit \wW as w/w
+\DeclareSIUnit{\wW}{w/w}
+% Define unit \bp as bp
+\DeclareSIUnit{\bp}{bp}
+% Define unit \U as U
+\DeclareSIUnit{\U}{U}
+% Remove the space between the number and the percentage
+% sign
+\catcode`\%=12\relax
+\DeclareSIUnit[number-unit-product = ]\percent{%}
+\catcode`\%=14\relax
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Chemical formulas
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include package for typesetting chemical formulas
+\usepackage{chemformula}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Bookmarks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include package to create hyperlinks, including PDF bookmarks, and
+% open all levels of the bookmarks by default
+\usepackage[bookmarksopenlevel=\maxdimen]{hyperref}
+
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Resident and transient microbial taxa in the gill microbiome of the mussel Mytilus galloprovincialis},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{\textbf{Resident and transient microbial taxa in the gill microbiome of the mussel \emph{Mytilus galloprovincialis}}}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Captions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Set the name for figures to "Figure"
+\renewcommand{\figurename}{Fig.}
+% Use Arabic numerals to number figures
+\renewcommand{\thefigure}{\arabic{figure}}
+
+
+\vspace{\fill}
+
+Marino Korlević\textsuperscript{1*}, Marsej Markovski\textsuperscript{1}, Damir Kapetanović\textsuperscript{2}, Irena Vardić Smrzlić\textsuperscript{2}, Karla Orlić\textsuperscript{2}, Jakša Bolotin\textsuperscript{3}, Valter Kožul\textsuperscript{3}, Svjetlana Bobanović-Ćolić\textsuperscript{3}, Vedrana Nerlović\textsuperscript{4}, and Lorena Perić\textsuperscript{2*}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Centre for Marine Research, Ruđer Bošković Institute, Croatia
+\item
+  Division for Marine and Environmental Research, Ruđer Bošković Institute, Croatia
+\item
+  Institute for Marine and Coastal Research, University of Dubrovnik, Croatia
+\item
+  Faculty of Marine Sciences, University of Split, Croatia
+\end{enumerate}
+
+\textsuperscript{*}To whom correspondence should be addressed:\\
+Marino Korlević\\
+G. Paliaga 5, 52210 Rovinj, Croatia\\
+e-mail: \href{mailto:marino.korlevic@irb.hr}{\nolinkurl{marino.korlevic@irb.hr}}\\
+ORCID iD: \href{https://orcid.org/0000-0001-5680-3556}{0000-0001-5680-3556}
+
+Lorena Perić\\
+Bijenička cesta 54, 10000 Zagreb, Croatia\\
+e-mail: \href{mailto:lorena.peric@irb.hr}{\nolinkurl{lorena.peric@irb.hr}}\\
+ORCID iD: \href{https://orcid.org/0000-0001-6899-9605}{0000-0001-6899-9605}
+
+% Add line numbers
+\linenumbers
+
+% Ensure that numbers are typeset in text mode
+\sisetup{mode=text}
+
+% Set the size of indentation to 24 pt
+\setlength\parindent{24pt}
+
+% Start a new page
+\newpage
+
+\section{Abstract}\label{abstract}
+
+Microorganisms associate with marine bivalves, forming microbial communities collectively known as the bivalve's microbiome. These communities may include resident taxa, associated with the bivalve host throughout its life, and transient taxa, whose presence is temporary and attributed to the passage of, for example, seawater or food through the host. To assess the gill microbiome of the Mediterranean mussel, \emph{Mytilus galloprovincialis} Lamarck, 1819, and its resident and transient taxa, individuals of this important aquaculture species were sampled at two locations on the eastern coast of the Adriatic Sea, Lim Bay and Mali Ston Bay, over one year. The microbiome was characterised using Illumina MiSeq sequencing of the V4 region of the 16S rRNA gene. For comparison, the microbial community in the surrounding seawater and sediment was also assessed at the same time and locations. The structure of the gill microbiome, determined at the OTU level, was distinct from the microbial community in both the surrounding seawater and sediment and did not differ between the two locations. However, it showed differences between months, indicating temporal dynamics. Taxonomic analysis revealed the presence of both resident and transient microbial taxa in the gill microbiome. Members without known relatives within \emph{Endozoicomonadaceae} were present in the gills of mussels from both locations and throughout the study period and appeared to be resident members. In contrast, \emph{Endozoicomonas}, ``\emph{Candidatus} Endoecteinascidia'', \emph{Vibrio}, and members without known relatives within \emph{Vibrionaceae} were transient, appearing in the gill microbiome only in certain months. Overall, the results of this study show that the gill microbiome of the mussel \emph{Mytilus galloprovincialis} differs from the microbial community in the surrounding seawater and sediment, exhibits temporal dynamics, and contains both resident and transient microbial taxa.
+
+\noindent
+\textbf{Keywords:} gill microbiome, Mediterranean mussel, \emph{Mytilus galloprovincialis}, aquaculture, Adriatic Sea, 16S rRNA gene sequencing, temporal changes, \emph{Gammaproteobacteria}
+\newpage
+
+\section{Introduction}\label{introduction}
+
+Marine animals, including bivalves, are associated with various microorganisms such as archaea, bacteria, viruses, protists, and fungi {[}\citeproc{ref-Apprill2017}{1}, \citeproc{ref-Salloum2025}{2}{]}. These microbes, collectively known as the animal's microbiome, can reside on or within the animal's body {[}\citeproc{ref-Apprill2017}{1}, \citeproc{ref-Petersen2018}{3}{]}. If located inside the body, they may live either outside or within host cells. Notably, microbes within host cells can inhabit specialised cells dedicated to housing symbionts, forming a particularly intimate type of symbiosis {[}\citeproc{ref-Petersen2018}{3}{]}. The close relationship between the host and its microbiome can be viewed as a holobiont: an integrated community in which the animal and its symbiotic microbes support each other {[}\citeproc{ref-Salloum2025}{2}, \citeproc{ref-Margulis1991}{4}{]}. Furthermore, as suggested by the hologenome concept, the genetic content of the host and the microbes in its microbiome should be considered a single evolutionary unit, meaning that host evolution is influenced by its microbiome {[}\citeproc{ref-Salloum2025}{2}, \citeproc{ref-Bordenstein2015}{5}{]}.
+
+The bivalve's microbiome may include both resident members, associated with the host throughout its life, and transient members, whose presence is temporary and attributed, for example, to the passage of seawater or food through the animal {[}\citeproc{ref-Pierce2018}{6}{]}. Evidence suggests that most microbes in the bivalve's microbiome are resident members {[}\citeproc{ref-Unzueta-Martinez2022a}{7}{]}. These microbes may be acquired by the host vertically, transmitted from parent to offspring, horizontally, adopted from the surrounding environment, or through a combination of these processes {[}\citeproc{ref-Petersen2018}{3}, \citeproc{ref-Bright2010}{8}, \citeproc{ref-Unzueta-Martinez2022}{9}{]}. Studies have also shown that the microbiome of various bivalve species differs from the microbial community in surrounding seawater or sediment, highlighting the resident nature of most microbiome members {[}\citeproc{ref-Unzueta-Martinez2022}{9}--\citeproc{ref-Vezzulli2018}{15}{]}. In addition to differing from the surrounding environment, the bivalve's microbiome also varies between body parts, such as the gut, gills, and haemolymph {[}\citeproc{ref-Unzueta-Martinez2022}{9}, \citeproc{ref-Lokmer2016}{12}, \citeproc{ref-Musella2020}{13}, \citeproc{ref-Vezzulli2018}{15}, \citeproc{ref-Dube2019}{16}{]}, and is, to some extent and for certain body parts, specific to the host species {[}\citeproc{ref-Akter2023}{10}, \citeproc{ref-Pierce2019}{14}, \citeproc{ref-Vezzulli2018}{15}, \citeproc{ref-Gignoux-Wolfsohn2024}{17}, \citeproc{ref-Munoz-Martinez2026}{18}{]}. Although most microbes in the bivalve's microbiome appear to be resident members, a portion is still transient {[}\citeproc{ref-Unzueta-Martinez2022a}{7}{]}, as suggested by studies reporting temporal changes {[}\citeproc{ref-Akter2023}{10}, \citeproc{ref-Pierce2019}{14}, \citeproc{ref-Nguyen2020}{19}, \citeproc{ref-Pierce2016}{20}{]}. The bivalve's microbiome can also differ between geographic locations {[}\citeproc{ref-Unzueta-Martinez2022a}{7}, \citeproc{ref-Gignoux-Wolfsohn2024}{17}, \citeproc{ref-Nguyen2020}{19}, \citeproc{ref-delRio-Lavin2023}{21}, \citeproc{ref-Lokmer2016a}{22}{]}, indicating that local conditions may also have an influence. Interestingly, the microbiome of bivalves transported from one geographic location to another converges towards that of native bivalves, highlighting the importance of local conditions {[}\citeproc{ref-Peruzzo2026}{23}, \citeproc{ref-Sun2025}{24}{]}.
+
+Microbes forming the bivalve's microbiome belong to various high-rank bacterial taxa, including the \emph{Pseudomonadota} classes \emph{Alphaproteobacteria} and \emph{Gammaproteobacteria}, \emph{Bacillota}, \emph{Bacteroidota}, \emph{Fusobacteriota}, and \emph{Spirochaetota} {[}\citeproc{ref-Gignoux-Wolfsohn2024}{17}, \citeproc{ref-Munoz-Martinez2026}{18}, \citeproc{ref-Lasa2019}{25}{]}. Members of these taxa have also been found in the microbiome of the Mediterranean mussel, \emph{Mytilus galloprovincialis} Lamarck, 1819 {[}\citeproc{ref-Akter2023}{10}, \citeproc{ref-Musella2020}{13}, \citeproc{ref-Vezzulli2018}{15}, \citeproc{ref-Munoz-Martinez2026}{18}, \citeproc{ref-delRio-Lavin2023}{21}, \citeproc{ref-Peruzzo2026}{23}, \citeproc{ref-Auguste2024a}{26}--\citeproc{ref-Zardinoni2024}{31}{]}, an important aquaculture bivalve species widely distributed across the Mediterranean Sea, including the Adriatic Sea {[}\citeproc{ref-Gosling2003b}{32}--\citeproc{ref-Wenne2022}{36}{]}. Studies focusing on \emph{M. galloprovincialis} have reported patterns of dynamics for this species' microbiome similar to those previously mentioned for the bivalve's microbiome in general. Specifically, differences between the microbiome and the ambient seawater have been reported {[}\citeproc{ref-Akter2023}{10}, \citeproc{ref-Musella2020}{13}, \citeproc{ref-Vezzulli2018}{15}, \citeproc{ref-Palladino2023}{28}, \citeproc{ref-Zardinoni2024}{31}{]}, as well as microbiome specificity for this host species {[}\citeproc{ref-Akter2023}{10}, \citeproc{ref-Vezzulli2018}{15}, \citeproc{ref-Munoz-Martinez2026}{18}{]} and its variation between body parts {[}\citeproc{ref-Musella2020}{13}, \citeproc{ref-Vezzulli2018}{15}{]}, sampling periods {[}\citeproc{ref-Akter2023}{10}, \citeproc{ref-Peruzzo2026}{23}, \citeproc{ref-Palladino2023}{28}, \citeproc{ref-Wathsala2021}{30}{]}, and geographic locations {[}\citeproc{ref-delRio-Lavin2023}{21}, \citeproc{ref-Peruzzo2026}{23}, \citeproc{ref-Palladino2023}{28}{]}.
+
+In general, studies assessing the bivalve's microbiome have focused on gut tissue {[}\citeproc{ref-Salloum2025}{2}{]}. Similarly, research on the \emph{M. galloprovincialis} microbiome has usually examined the gut microbiome {[}\citeproc{ref-Akter2023}{10}, \citeproc{ref-Vezzulli2018}{15}, \citeproc{ref-delRio-Lavin2023}{21}, \citeproc{ref-Palladino2023}{28}, \citeproc{ref-Wathsala2021}{30}{]} or assessed the microbiome of the whole individual without a tissue-specific sampling approach {[}\citeproc{ref-Munoz-Martinez2026}{18}, \citeproc{ref-Peruzzo2026}{23}, \citeproc{ref-Bozcal2020}{27}, \citeproc{ref-Schoinas2023}{29}{]}. Consequently, a limited number of studies have described the temporal and spatial dynamics of the microbiome in other body parts, such as gills and haemolymph {[}\citeproc{ref-Sun2025}{24}, \citeproc{ref-Auguste2024a}{26}, \citeproc{ref-Zardinoni2024}{31}{]}. As the mussel \emph{M. galloprovincialis} is a filter-feeding animal {[}\citeproc{ref-Gosling2003a}{37}{]}, its gills are in constant contact with seawater and may be influenced by sediment resuspension. Therefore, this study focused on assessing the gill microbiome of individuals of this bivalve species, as well as the microbial community in the surrounding seawater and sediment, from two important and geographically distant bivalve aquaculture locations on the eastern coast of the Adriatic Sea, namely Lim Bay and Mali Ston Bay {[}\citeproc{ref-BratosCetinic2024}{38}{]}, over a period of one year. The study locations are in two legally protected marine reserve areas with distinct hydrological conditions and productivity, typical of the Adriatic Sea biogeographical regions to which they belong {[}\citeproc{ref-Bosak2013}{39}--\citeproc{ref-Skejic2015}{42}{]}. More precisely, the aims of this study were to: (i) compare the mussel gill microbiome with the microbial community in the surrounding seawater and sediment, (ii) determine differences in the gill microbiome between the two aquaculture locations, and (iii) assess changes in the gill microbiome during the one-year study period.
+
+\section{Methods}\label{methods}
+
+\subsection{Sampling}\label{sampling}
+
+This study was conducted at two bivalve aquaculture locations: Lim Bay in the north and Mali Ston Bay in the south of the eastern Adriatic Sea coast (Fig. \ref{fig:map}). Mussels of the species \emph{M. galloprovincialis}, seawater, and sediment were sampled in July, September, and November 2020 and January, March, and May 2021 (Supplementary Tables \ref{supp-tab:nseq-notus-seawater-sediment} and \ref{supp-tab:nseq-notus-gills}), as described in Žurga et al.~(2024) {[}\citeproc{ref-Zurga2024}{43}{]} and Orlić et al.~(2025) {[}\citeproc{ref-Orlic2025a}{44}{]}. Briefly, locally produced adult mussels were deployed at an aquaculture site at a depth of 10 \unit{\m} in Lim Bay (\ang{45;7;50}N, \ang{13;41;20}E) and 6 \unit{\m} in Mali Ston Bay (\ang{42;52;16}N, \ang{17;42;12}E), following common farming practices at these locations (Fig. \ref{fig:map}). At each sampling date, 10 individuals were collected, their gills excised, and snap-frozen in liquid nitrogen. Seawater was collected at a depth close to that at which mussels were deployed, specifically 8 \unit{\m} in Lim Bay and 5 \unit{\m} in Mali Ston Bay, using a Niskin bottle and filtered (0.35--1 \unit{\l}) through 0.2 \unit{\um} membrane filters. Filters were transferred into 2 \unit{\ml} cryotubes and snap-frozen in liquid nitrogen. Sediment was collected using an Ekman grab sampler, transferred into 2 \unit{\ml} cryotubes, and also snap-frozen in liquid nitrogen. Upon arrival at the laboratory, samples of gills and sediment, as well as membrane filters, were stored at \qty{-80}{\degreeCelsius} until further processing. For comparison, in addition to the aquaculture site, seawater and sediment were also sampled at a control site, where no mussels were farmed, in both Lim Bay (\ang{45;7;57}N, \ang{13;38;27}E) and Mali Ston Bay (\ang{42;51;59}N, \ang{17;42;5}E; Fig. \ref{fig:map}). Seawater from the control site was sampled at the same depth as at the aquaculture site.
+
+\begin{figure}[ht]
+
+{\centering \includegraphics[width=1\linewidth]{../results/figures/map} 
+
+}
+
+\caption{Sampling locations and sites in the Adriatic Sea. At each location, namely Lim Bay and Mali Ston Bay, samples were collected from one aquaculture site and one control site (© OpenStreetMap contributors, \url{https://www.openstreetmap.org/copyright})}\label{fig:map}
+\end{figure}
+
+
+
+\subsection{DNA isolation}\label{dna-isolation}
+
+Total DNA from gills (32--123 \unit{\mg}) and 0.2 \unit{\um} membrane filters was isolated according to Massana et al.~(1997) {[}\citeproc{ref-Massana1997}{45}{]} with slight modifications. After extraction with organic solvents, 1/10 volume of 3 \unit{\Molar} sodium acetate (pH 5.2) was added. DNA was precipitated by adding 1 volume of cold (\qty{-20}{\degreeCelsius}) isopropanol and incubating the mixture for 1 \unit{\hour} or overnight at \qty{-20}{\degreeCelsius}. The pellet obtained after centrifugation at 20,000 × \emph{g} and \qty{4}{\degreeCelsius} for 20 \unit{\minute} was washed twice with 500 \unit{\ul} of cold (\qty{-20}{\degreeCelsius}) 70\unit{\percent} ethanol. After each wash, the pellet was centrifuged at 20,000 × \emph{g} and \qty{4}{\degreeCelsius} for 5 \unit{\minute}. Air-dried pellets were resuspended in 100 \unit{\ul} of deionised water for DNA isolated from gills and 50 \unit{\ul} for DNA isolated from membrane filters. Total DNA from sediment was isolated as described in Markovski et al.~(2022) {[}\citeproc{ref-Markovski2022}{46}{]}. This is a modified protocol {[}\citeproc{ref-Pjevac2018}{47}{]} of the isolation procedure described in Zhou et al.~(1996) {[}\citeproc{ref-Zhou1996}{48}{]}. Briefly, 2 \unit{\gram} of sediment was mixed with extraction buffer and proteinase K, and incubated by horizontal shaking at 37 \unit{\degreeCelsius} for 30 \unit{\minute}. After SDS was added, the mixture was incubated again by horizontal shaking at 65 \unit{\degreeCelsius} for 60 \unit{\minute}. Sediment particles were removed by centrifugation and the supernatant was extracted three times with an equal volume of chloroform:isoamyl alcohol (1:1). DNA was precipitated by adding isopropanol and incubating the mixture at 22 \unit{\degreeCelsius} for 60 \unit{\minute}. The pellet obtained by centrifugation was washed twice with cold (\qty{-20}{\degreeCelsius}) 70\unit{\percent} ethanol, air-dried, and resuspended in 100 \unit{\ul} of deionised water.
+
+\subsection{Illumina 16S rRNA sequencing}\label{illumina-16s-rrna-sequencing}
+
+DNA isolated from gills, membrane filters, and sediment was treated with RNase A at a final concentration of 200 \unit{\ug\per\ml} at 37 \unit{\degreeCelsius} for 2 \unit{\hour}. DNA concentration was determined using the Quant-iT PicoGreen dsDNA Assay Kit (Invitrogen, USA) according to the manufacturer's instructions. DNA from gills was diluted to 10 \unit{\ng\per\ul}, and DNA from membrane filters and sediment to 1 \unit{\ng\per\ul}. The V4 region of the 16S rRNA gene was amplified using a two-step PCR procedure. In the first PCR, 515F (Parada; 5\('\)-GTGYCAGCMGCCGCGGTAA-3\('\)) and 806R (Apprill; 5\('\)-GGACTACNVGGGTWTCTAAT-3\('\)) primers from the Earth Microbiome Project (\url{https://earthmicrobiome.org/protocols-and-standards/16s}) were used {[}\citeproc{ref-Apprill2015}{49}--\citeproc{ref-Parada2016}{52}{]}, each with a sequence tag at the 5\('\) end. Four parallel PCRs were performed to amplify the target region from each DNA sample. Each 25 \unit{\ul} reaction contained 1 × Q5 Reaction Buffer, 0.2 \unit{\milli\Molar} dNTP mix, 0.7 \unit{\mg\per\ml} bovine serum albumin (BSA), 0.5 \unit{\micro\Molar} forward and
+reverse primers, 0.5 \unit{\U} Q5 High-Fidelity DNA Polymerase (New England Biolabs, USA), and 50 \unit{\ng} DNA template from gills or 5 \unit{\ng} from membrane filters and sediment. The cycling conditions were: initial denaturation at 98 \unit{\degreeCelsius} for 30 \unit{\s}; 25 cycles of denaturation at 98 \unit{\degreeCelsius} for 10 \unit{\s}, annealing at 50 \unit{\degreeCelsius} for 30 \unit{\s}, and elongation at 72 \unit{\degreeCelsius} for 5 \unit{\s} for reactions with DNA from gills or 30 \unit{\s} for reactions with DNA from membrane filters and sediment. PCR cycling ended with a final elongation at 72 \unit{\degreeCelsius} for 2 \unit{\minute}. The higher amount of DNA template (50 \unit{\ng}) and shorter elongation time (5 \unit{\s}) used for amplifying the target region from DNA isolated from gills were optimised to reduce amplification of non-specific fragments. The four parallel reactions were pooled, and PCR products were purified using the GeneJET PCR Purification Kit (Thermo Fisher Scientific, USA) according to the manufacturer's instructions. The protocol without isopropanol addition was followed to avoid co-purification of primer-dimers. The column was eluted in 30 \unit{\ul} deionised water.
+
+Purified PCR products were sent to IMGM Laboratories, Martinsried, Germany, for Illumina MiSeq sequencing (2 × 250 \unit{\bp}). Before sequencing, the second PCR in the two-step PCR procedure was performed using primers that bind to the sequence tag added during the first PCR. Adapter and sample-specific index sequences were also incorporated in the second PCR by including these sequences at the 5\('\) end of the primers used. This PCR was performed for eight cycles. In addition to the gill, seawater, and sediment samples, two positive and two negative controls were sequenced. Each positive control consisted of four parallel PCRs using genomic DNA from a mock community composed of evenly mixed DNA from 20 bacterial strains (ATCC MSA-1002, ATCC, USA) as the DNA template. Each negative control comprised four parallel PCRs without a DNA template. One positive and one negative control were processed according to the PCR procedure for gill samples, and one positive and one negative control according to the PCR procedure for seawater and sediment samples.
+
+\subsection{Sequence and data analysis}\label{sequence-and-data-analysis}
+
+Sequences obtained were analysed using mothur (version 1.48.2) {[}\citeproc{ref-Schloss2009}{53}{]} following the MiSeq Standard Operating Procedure (MiSeq SOP; \url{https://mothur.org/wiki/miseq_sop}) {[}\citeproc{ref-Kozich2013}{54}{]} and recommendations from the Riffomonas project to enhance data reproducibility (\url{https://riffomonas.org}). For alignment and classification, the SILVA SSU Ref NR 99 database (release 138.2; \url{https://www.arb-silva.de}) was used {[}\citeproc{ref-Quast2013}{55}, \citeproc{ref-Yilmaz2014}{56}{]}. Sequences were clustered into operational taxonomic units (OTUs) using a 97\unit{\percent} similarity threshold.
+
+Data processing and visualisation were performed using R (version 4.5.3) {[}\citeproc{ref-R-base}{57}{]} with the packages vegan (version 2.6-10) {[}\citeproc{ref-R-vegan}{58}{]} and tidyverse (version 2.0.0) {[}\citeproc{ref-R-tidyverse}{59}, \citeproc{ref-tidyverse2019}{60}{]}, as well as several other packages {[}\citeproc{ref-R-bookdown}{61}--\citeproc{ref-tinytex2019}{83}{]}. The observed number of OTUs, Chao1, ACE, exponential of the Shannon diversity index, and Inverse Simpson diversity index were calculated after normalisation to the minimum number of sequences per sample using vegan's function \texttt{rrarefy} to account for differences in sequencing depth {[}\citeproc{ref-R-vegan}{58}{]}. Richness estimators Chao1 and ACE were obtained using vegan's function \texttt{estimateR}, while the Shannon and Inverse Simpson diversity indices were calculated using vegan's function \texttt{diversity} {[}\citeproc{ref-R-vegan}{58}{]}. To express both diversity indices as the effective number of OTUs, the exponential of the Shannon diversity index was calculated {[}\citeproc{ref-Jost2006}{84}{]}. Variation in microbial community structure was assessed on OTU abundances by pooling sequences from each environment, site, location, or month and calculating the Bray--Curtis dissimilarity coefficient using vegan's function \texttt{vegdist} after normalising the newly created pools to the minimum number of sequences per pool with vegan's function \texttt{rrarefy} {[}\citeproc{ref-R-vegan}{58}, \citeproc{ref-Borcard2018}{85}, \citeproc{ref-Legendre2012}{86}{]}. Differences between these communities from distinct environments, sites, locations, and months were tested by performing Analysis of Similarities (ANOSIM) using vegan's function \texttt{anosim} with 999 permutations {[}\citeproc{ref-R-vegan}{58}{]}. Differences between richness estimators, diversity indices, and proportions of taxa were tested using the Mann--Whitney \emph{U} test with the function \texttt{wilcox.test} when two groups were compared, or the Kruskal--Wallis \emph{H} test with the function \texttt{kruskal.test}, followed by pairwise comparison with the Mann--Whitney \emph{U} test using the function \texttt{pairwise.wilcox.test}, when more than two groups were compared {[}\citeproc{ref-R-base}{57}{]}. The Bonferroni correction was applied to address the multiple comparisons problem.
+
+From six sampling months, two locations (Lim Bay and Mali Ston Bay), and two sites (aquaculture and control), 24 seawater and 24 sediment samples were processed. Additionally, from 10 individuals collected at the aquaculture site during the same months and locations, 120 gill samples were processed. This resulted in a total of 168 samples, of which 149 yielded sufficient sequences for further analysis (Supplementary Tables \ref{supp-tab:nseq-notus-seawater-sediment} and \ref{supp-tab:nseq-notus-gills}). From these samples, a total of 2.1 million sequences were obtained after quality curation and exclusion of sequences without known relatives (no relative sequences), as well as eukaryotic, chloroplast, and mitochondrial sequences. The number of sequences per sample ranged from 2,062 to 60,611 (Supplementary Tables \ref{supp-tab:nseq-notus-seawater-sediment} and \ref{supp-tab:nseq-notus-gills}). These sequences were clustered into a total of 66,695 different OTUs. For seawater and sediment samples, as well as for gill samples with a high number of OTUs, the rarefaction curves did not level off, even with the highest sequencing effort, as is commonly observed in high-throughput 16S rRNA amplicon sequencing approaches (Supplementary Figs. \ref{supp-fig:rarefaction-a} and \ref{supp-fig:rarefaction-b}). However, for gill samples with a low number of OTUs, the rarefaction curves did level off. Normalisation to the minimum number of sequences per sample (2,062 sequences) resulted in 26,930 different OTUs, ranging from 41 to 1,443 OTUs per sample. Based on the positive controls (mock community ATCC MSA-1002), a sequencing error rate of 0.04\unit{\percent} was calculated, which is comparable to previously reported values for next-generation 16S rRNA amplicon sequencing {[}\citeproc{ref-Markovski2022}{46}, \citeproc{ref-Kozich2013}{54}, \citeproc{ref-Korlevic2021a}{87}, \citeproc{ref-Schloss2016}{88}{]}. In addition, the two negative controls processed with the samples yielded 10 and 12 sequences after sequence quality curation.
+\newpage
+
+\section{Results}\label{results}
+
+To assess the richness and diversity of microbial communities, the observed number of OTUs, the richness estimators Chao1 and ACE, the exponential of the Shannon diversity index, and the Inverse Simpson diversity index were calculated at the OTU level for the sampled environments (seawater, sediment, and the gills of \emph{M. galloprovincialis}) at both aquaculture and control sites (Fig. \ref{fig:alpha}). Statistically significant changes were found for all parameters (Kruskal--Wallis \emph{H} test, all \emph{p} \textless{} 0.0001; Supplementary Table \ref{supp-tab:kruskal-wallis}). The sediment microbial community had the highest observed number of OTUs (aquaculture, 927--1,336 OTUs; control, 1,070--1,443 OTUs), followed by the seawater community (aquaculture, 185--415 OTUs; control, 218--457 OTUs), and the gill microbiome (aquaculture, 41--749 OTUs). No significant differences in the observed number of OTUs were found between the aquaculture and control sites for the sediment and seawater communities (Fig. \ref{fig:alpha} and Supplementary Table \ref{supp-tab:kruskal-wallis}). The same pattern was observed for the exponential of the Shannon diversity index and the Inverse Simpson diversity index. However, when the richness estimators Chao1 and ACE were calculated, differences between the gill microbiome and seawater microbial communities at the aquaculture and control sites were no longer observed (Fig. \ref{fig:alpha} and Supplementary Table \ref{supp-tab:kruskal-wallis}). Additionally, neither parameter showed differences between the sampling locations, except for the Inverse Simpson diversity index of sediment communities, which showed higher values in Mali Ston Bay (158.2--725.3 OTUs) than in Lim Bay (119.3--268.5 OTUs; Mann--Whitney \emph{U} test, \emph{p} \textless{} 0.01). Furthermore, for the gill microbiome, only the richness estimators Chao1 and ACE showed differences across sampling months (Kruskal--Wallis \emph{H} test, both \emph{p} \textless{} 0.05). However, the only significant difference found was between January and March 2021 (pairwise Mann--Whitney \emph{U} test, both \emph{p} \textless{} 0.05).
+
+\begin{figure}[ht!]
+
+{\centering \includegraphics[width=0.9\linewidth]{../results/figures/alpha} 
+
+}
+
+\caption{The observed number of OTUs, Chao1, ACE, exponential of the Shannon diversity index, and Inverse Simpson diversity index of microbial communities from different environments and sites. Dashed boxes indicate groups of samples from the control site, while non-dashed areas represent groups of samples from the aquaculture site. Groups that do not share a letter are significantly different (\emph{p} \textless{} 0.05)}\label{fig:alpha}
+\end{figure}
+
+
+
+To assess variation in the structure of microbial communities between the sampled environments and sites, Bray--Curtis dissimilarity coefficients based on OTU abundances were calculated (Fig. \ref{fig:beta}). Except for the seawater (Bray--Curtis dissimilarity, 0.23) and sediment (Bray--Curtis dissimilarity, 0.47) communities, which showed lower variation between the aquaculture and control sites, all other dissimilarities between sampled environments and sites were generally high (Bray--Curtis dissimilarity, 0.95--0.98). The pronounced distinction of microbial communities from different environments was also supported by ANOSIM (R = 0.99, \emph{p} \textless{} 0.01). In contrast, ANOSIM did not support differentiation of the seawater (R = \(-0.07\), \emph{p} = 0.93) and sediment communities (R = 0.05, \emph{p} = 0.09) between the aquaculture and control sites. When communities from different locations were compared, gill microbiomes showed the lowest degree of variation between sampling locations (Bray--Curtis dissimilarity, 0.27), followed by the seawater (Bray--Curtis dissimilarity, 0.44) and sediment (Bray--Curtis dissimilarity, 0.55) microbial communities. ANOSIM supported differentiation between locations, with some community overlap, only for sediment communities (R = 0.43, \emph{p} \textless{} 0.01). When sampling months of the gill microbiome were compared, lower variation was observed between microbiomes from September 2020 to January 2021 (Bray--Curtis dissimilarity, 0.21--0.30) and from March to May 2021 (Bray--Curtis dissimilarity, 0.23) compared to other dissimilarities between sampling months (Bray--Curtis dissimilarity, 0.34--0.56; Fig. \ref{fig:beta}). The separation of gill microbiomes from July 2020, September 2020 to January 2021, and March to May 2021 was also supported by ANOSIM, although with substantial community overlap (R = 0.30, \emph{p} \textless{} 0.01).
+
+\begin{figure}[t!]
+
+{\centering \includegraphics[width=1\linewidth]{../results/figures/beta} 
+
+}
+
+\caption{Bray--Curtis dissimilarity coefficients calculated from the abundances of OTUs between microbial communities from different environments and sites, and between microbial communities from the gills of the mussel \emph{M. galloprovincialis} (gill microbiome) sampled in different months}\label{fig:beta}
+\end{figure}
+
+
+
+\begin{figure}[t!]
+
+{\centering \includegraphics[width=1\linewidth]{../results/figures/taxonomy_environments_sites} 
+
+}
+
+\caption{Taxonomic classification and average relative contribution of the most abundant (\qty{>=3}{\percent}) bacterial and archaeal sequences in different sampled environments and at each site. ``No Relative'' indicates sequences that could not be classified into any taxon, while ``NR'' (No Relative) next to the name of a taxonomic group refers to sequences that could not be assigned to any known taxon within that group}\label{fig:taxonomy-environments-sites}
+\end{figure}
+
+
+
+Differences in community structure between environments and similarities between sites were also evident in the taxonomic composition of the microbial communities (Fig. \ref{fig:taxonomy-environments-sites}). There were no notable differences between the aquaculture and control sites for the sediment and seawater communities. The seawater microbial community was mainly composed of the bacterial taxa \emph{Alphaproteobacteria} (aquaculture, 12.8--39.0\unit{\percent}; control, 11.1--42.1\unit{\percent}), \emph{Gammaproteobacteria} (aquaculture, 14.6--34.6\unit{\percent}; control, 13.4--32.7\unit{\percent}), \emph{Bacteroidota} (aquaculture, 7.5--19.3\unit{\percent}; control, 8.4--20.3\unit{\percent}), \emph{Cyanobacteriota} (aquaculture, 1.0--23.2\unit{\percent}; control, 1.2--21.6\unit{\percent}), \emph{Verrucomicrobiota} (aquaculture, 0.7--25.9\unit{\percent}; control, 0.8--24.5\unit{\percent}), and the archaeal phylum \emph{Thermoplasmatota} (aquaculture, 0.01--32.2\unit{\percent}; control, 0--32.5\unit{\percent}). The sediment microbial community differed from the seawater community and was mainly composed of the bacterial taxa \emph{Gammaproteobacteria} (aquaculture, 12.6--22.5\unit{\percent}; control, 11.1--24.7\unit{\percent}), \emph{Thermodesulfobacteriota} (aquaculture, 8.3--16.7\unit{\percent}; control, 2.0--16.6\unit{\percent}), \emph{Planctomycetota} (aquaculture, 9.8--15.3\unit{\percent}; control, 7.4--15.2\unit{\percent}), \emph{Bacteroidota} (aquaculture, 4.1--11.1\unit{\percent}; control, 2.9--15.8\unit{\percent}), \emph{Chloroflexota} (aquaculture, 3.3--7.2\unit{\percent}; control, 1.3--7.0\unit{\percent}), members without known relatives within \emph{Bacteria} (aquaculture, 2.5--13.1\unit{\percent}; control, 3.7--18.0\unit{\percent}), and the archaeal phylum \emph{Thermoproteota} (aquaculture, 1.6--13.1\unit{\percent}; control, 0.5--12.0\unit{\percent}; Fig. \ref{fig:taxonomy-environments-sites}). In contrast to the taxonomic composition of both the seawater and sediment microbial communities, the gill microbiome was largely composed of the bacterial class \emph{Gammaproteobacteria} (aquaculture, 27.0--98.8\unit{\percent}), while the proportions of other high-rank bacterial groups, such as \emph{Alphaproteobacteria} (aquaculture, 0.2--33.7\unit{\percent}), \emph{Bacteroidota} (aquaculture, 0.2--50.4\unit{\percent}), \emph{Planctomycetota} (aquaculture, 0.02--8.3\unit{\percent}), \emph{Bacillota} (aquaculture, 0.03--26.2\unit{\percent}) or members without known relatives within \emph{Bacteria} (aquaculture, 0.1--13.1\unit{\percent}), were substantially lower (Fig. \ref{fig:taxonomy-environments-sites}). The high proportion of \emph{Gammaproteobacteria} in the gill microbiome was observed in individuals at both locations and throughout the study period, while \emph{Alphaproteobacteria}, \emph{Bacteroidota}, and \emph{Bacillota} comprised a notable proportion of the gill microbiome only in a few individuals (Supplementary Fig. \ref{supp-fig:taxonomy-gills-phylum}).
+
+A more detailed analysis of the taxonomic composition of the seawater microbial community revealed temporal patterns for some taxa (Supplementary Fig. \ref{supp-fig:taxonomy-seawater-sediment-phylum}). For example, the archaeal phylum \emph{Thermoplasmatota} showed a similar pattern at both locations and sites, comprising a higher proportion of the community from November 2020 to January 2021 (10.9--32.5\unit{\percent}) than in other months (0--4.6\unit{\percent}). Notably, during the months when the proportion of this archaeal phylum was high, almost the entire \emph{Thermoplasmatota} community consisted of Marine Group II (95.2--100\unit{\percent}). Marked differences between locations were observed in May 2021, when in Lim Bay at both sites, more than half of the microbial community was composed of \emph{Gammaproteobacteria} (31.5--34.6\unit{\percent}) and \emph{Verrucomicrobiota} (24.5--25.9\unit{\percent}), which was higher than in Mali Ston Bay at the same time (\emph{Gammaproteobacteria}, 20.2--23.6\unit{\percent}; \emph{Verrucomicrobiota}, 3.9--3.9\unit{\percent}) or in other months (\emph{Gammaproteobacteria}, 13.4--32.7\unit{\percent}; \emph{Verrucomicrobiota}, 0.7--4.7\unit{\percent}). In contrast, \emph{Alphaproteobacteria} constituted a lower proportion of the microbial community in Lim Bay in May 2021 (11.1--12.8\unit{\percent}) than in Mali Ston Bay at the same time (31.0--39.0\unit{\percent}) or in other months (19.6--42.1\unit{\percent}). For the sediment microbial community, a fairly similar taxonomic composition between locations and sites, as well as across sampling months, was observed (Supplementary Fig. \ref{supp-fig:taxonomy-seawater-sediment-phylum}). The only notable exception was the sediment community in Mali Ston Bay at the control site, where, for example, \emph{Thermodesulfobacteriota} comprised a lower proportion of the community from July to November 2020 (2.0--5.1\unit{\percent}) than from January to May 2021 (10.8--16.6\unit{\percent}). This low proportion of \emph{Thermodesulfobacteriota} was also lower than that observed at the aquaculture site in Mali Ston Bay (9.9--16.7\unit{\percent}) and at both sites in Lim Bay (8.3--15.2\unit{\percent}).
+
+\begin{figure}[t!]
+
+{\centering \includegraphics[width=0.7\linewidth]{../results/figures/taxonomy_gills_genus} 
+
+}
+
+\caption{Relative contribution of the most abundant (\qty{>=10}{\percent}) bacterial and archaeal sequences from the gills of the mussel \emph{M. galloprovincialis} (gill microbiome) classified at the genus taxonomic rank. From July 2020 to May 2021, 10 mussels were collected per sampling month in Lim Bay and Mali Ston Bay. Each bar (individual index) represents an individual mussel. ``No Relative'' indicates sequences that could not be classified into any taxon, while ``NR'' (No Relative) next to the name of a taxonomic group refers to sequences that could not be assigned to any known taxon within that group. ``NA'' (Not Available) indicates samples that were not successfully analysed}\label{fig:taxonomy-gills-genus}
+\end{figure}
+
+
+
+Because, as previously mentioned, the gill microbiome of most \emph{M. galloprovincialis} mussels, except for a few individuals, was largely composed of \emph{Gammaproteobacteria}, no differences in community composition between locations or sampling months were identified (Supplementary Fig. \ref{supp-fig:taxonomy-gills-phylum}). However, when the taxonomic composition was analysed at lower taxonomic ranks, such as family and genus, differences between locations and sampling months were observed (Fig. \ref{fig:taxonomy-gills-genus}). Although high variability in the taxonomic composition of each individual's gill microbiome was noted, low-rank gammaproteobacterial groups present at both locations and throughout the study period, as well as groups specific to certain locations or months, were identified. Members without known relatives within \emph{Endozoicomonadaceae} were present in mussel gills at both locations and throughout the study period, showing a high degree of variability between individuals (4.3--95.1\unit{\percent}; Fig. \ref{fig:taxonomy-gills-genus}). When differences in the proportion of this group between individuals from different locations were tested, the only significant difference was its higher proportion in the gill microbiome of individuals from Mali Ston Bay (52.0--90.7\unit{\percent}) compared to those from Lim Bay (27.9--66.6\unit{\percent}) in September 2020 (Mann--Whitney \emph{U} test, \emph{p} \textless{} 0.001). In addition, significant differences between months were observed only in Lim Bay (Kruskal--Wallis \emph{H} test, \emph{p} \textless{} 0.01), specifically between July 2020 (29.4--74.7\unit{\percent}) and January 2021 (46.7--93.2\unit{\percent}), July 2020 and March 2021 (42.9--95.1\unit{\percent}), and between September 2020 (27.9--66.6\unit{\percent}) and January 2021 (pairwise Mann--Whitney \emph{U} test, all stated comparisons \emph{p} \textless{} 0.05). Interestingly, \emph{Endozoicomonas}, a member of the family \emph{Endozoicomonadaceae}, was almost absent in the gill microbiome at both locations from July to November 2020 (0--3.2\unit{\percent}), but from January to May 2021 it comprised a substantial proportion of the microbiome in many individuals from both locations (0.5--59.5\unit{\percent}; Mann--Whitney \emph{U} test, \emph{p} \textless{} 0.0001; Fig. \ref{fig:taxonomy-gills-genus}). Another taxonomic group showing specificity to a certain period was ``\emph{Candidatus} Endoecteinascidia'', which comprised a substantial proportion of the gill microbiome in many individuals in July 2020 (0--66.1\unit{\percent}), while in other months the microbiomes of only a few individuals contained a higher proportion of this group (0--40.3\unit{\percent}; Fig. \ref{fig:taxonomy-gills-genus}). These differences in proportions of ``\emph{Candidatus} Endoecteinascidia'' between July 2020 and all other months were supported by the Mann--Whitney \emph{U} test (all \emph{p} \textless{} 0.01). \emph{Vibrio} showed differences in the proportion of the gill microbiome between locations and sampling months (Fig. \ref{fig:taxonomy-gills-genus}). In September 2020, higher proportions of this group were observed in gill microbiomes from Lim Bay (6.0--30.5\unit{\percent}) than from Mali Ston Bay (0.1--1.5\unit{\percent}). In addition, these proportions in September 2020 were also higher than those observed in all other months at either location (0--6.5\unit{\percent}). These differences in the proportion of the gill microbiome between individuals from Lim Bay in September 2020 and individuals from all other months at either location were supported by the Mann--Whitney \emph{U} test (all \emph{p} \textless{} 0.01; samples from Mali Ston Bay from January 2021 were excluded due to the limited number of samples). Furthermore,
+members without known relatives within \emph{Vibrionaceae} also showed differences in the proportion of the gill microbiome between locations and sampling months (Fig. \ref{fig:taxonomy-gills-genus}). Higher proportions of this group were observed in individuals from Lim Bay in September (4.9--17.1\unit{\percent}) and November (1.0--29.9\unit{\percent}) 2020 than in individuals from Mali Ston Bay in the same months (September 2020, 0.008--0.3\unit{\percent}; November 2020, 0.06--0.5\unit{\percent}). In addition, these proportions in individuals from Lim Bay from September to November 2020 were also higher than those observed in individuals from all other months at either location (0--3.8\unit{\percent}). The similarities in proportions of this group in individuals from Lim Bay in September and November 2020 and the differences from individuals from all other months at either location were supported by the Mann--Whitney \emph{U} test (all \emph{p} \textless{} 0.01; samples from Mali Ston Bay from January 2021 were excluded due to the limited number of samples).
+\newpage
+
+\section{Discussion}\label{discussion}
+
+The mussel \emph{M. galloprovincialis} is a filter-feeding animal, meaning that, as in most bivalve species, its gills are used for both gas exchange and feeding {[}\citeproc{ref-Gosling2003a}{37}{]}. As the gills are in constant contact with seawater and may be influenced by sediment resuspension, it is advisable to compare the gill microbiome with the microbial communities in the surrounding seawater and sediment. In this study, the observed number of OTUs, as well as the exponential of the Shannon diversity index and the Inverse Simpson diversity index, were significantly lower for the gill microbiome than for the seawater and sediment microbial communities. However, when the total number of OTUs is considered using calculated richness estimators, the difference in the number of OTUs between the gill microbiome and the seawater microbial community is no longer evident. It appears that the alpha diversity of the \emph{M. galloprovincialis} gill microbiome is similar to that of the microbial community in ambient seawater, or at least the differences are not substantial. A study on the gill microbiome of the same species reported differences in alpha diversity between the gill microbiome and the microbial community in the surrounding seawater {[}\citeproc{ref-Zardinoni2024}{31}{]}, while another study found no differences between the microbial community in the surrounding seawater and the microbiome of various body parts of this species, including the gills {[}\citeproc{ref-Musella2020}{13}{]}. In any case, the alpha diversity of the gill microbiome and seawater microbial community was substantially lower than that of the sediment community. Similarly, comparisons of the gut and shell microbiome of the eastern oyster, \emph{Crassostrea virginica}, with the sediment microbial community also found lower alpha diversity in the oyster's gut and shell microbiome than in the sediment community {[}\citeproc{ref-Arfken2017}{11}{]}. The alpha diversity of the gill microbiome did not differ between the two locations, Lim Bay and Mali Ston Bay, consistent with a study comparing the gill microbiome of \emph{M. galloprovincialis} between nearby locations {[}\citeproc{ref-Zardinoni2024}{31}{]}, as well as another study comparing its whole microbiome between more distant geographic locations {[}\citeproc{ref-Peruzzo2026}{23}{]}. Richness estimators were also the only alpha diversity parameters showing significant differences in the gill microbiome between sampling months, although the only significant difference was between January and March 2021. Overall, it appears that the mussel \emph{M. galloprovincialis} has a gill microbiome with lower alpha diversity than the surrounding sediment microbial community and minimal difference from the community in the surrounding seawater. In addition, its gill microbiome appears to be stable in terms of alpha diversity, showing minimal variation between different sampling locations and months.
+
+Although alpha diversity parameters did not indicate a strong difference between the gill microbiome of \emph{M. galloprovincialis} and the microbial community in the surrounding seawater, Bray--Curtis dissimilarity calculated from OTU abundances revealed a clear separation between the gill microbiome and the communities in both the surrounding seawater and sediment. This finding, that the mussel \emph{M. galloprovincialis} harbours a gill microbiome with a community structure distinct from that of the microbial community in ambient seawater, is consistent with studies reporting differences between the microbiome of this species' various body parts, such as the gut, gills, and haemolymph, and the community in the surrounding seawater {[}\citeproc{ref-Akter2023}{10}, \citeproc{ref-Musella2020}{13}, \citeproc{ref-Vezzulli2018}{15}, \citeproc{ref-Palladino2023}{28}, \citeproc{ref-Zardinoni2024}{31}{]}. Furthermore, the difference between the gill microbiome of this species and the sediment microbial community is similar to the observed distinction in community structure between the gut and shell microbiome of the eastern oyster and the microbial community in the surrounding sediment {[}\citeproc{ref-Arfken2017}{11}{]}. Comparison of the overall structure of the \emph{M. galloprovincialis} gill microbiome at the OTU level in this study did not reveal significant differentiation between the two locations, Lim Bay and Mali Ston Bay, despite their considerable geographic distance. This agrees with a study of the gill microbiome of the same species that also did not show variation between locations {[}\citeproc{ref-Zardinoni2024}{31}{]}. In contrast, the structure of the gut microbiome of the same species varied with geographic location {[}\citeproc{ref-delRio-Lavin2023}{21}, \citeproc{ref-Palladino2023}{28}{]}, indicating a greater influence of local conditions on the gut than on the gill microbiome, possibly due to variation in the origin of food, which also includes microbes, with geographic location and the potential involvement of the gut microbiota in food digestion {[}\citeproc{ref-Pierce2018}{6}, \citeproc{ref-Gosling2003c}{89}{]}. Interestingly, the structure of the overall microbiome of the mussel \emph{M. galloprovincialis} transported from one geographic location to another is initially different and converges towards that of native mussels, highlighting the influence of local conditions, the possible high contribution of the gut microbiota to the overall microbiome, and the importance of assessing tissue-specific microbiomes {[}\citeproc{ref-Peruzzo2026}{23}{]}. Furthermore, in this study, the structure of the gill microbiome at the OTU level showed a separation of microbiomes from July 2020, from September 2020 to January 2021, and from March to May 2021, indicating the presence of microbiome taxa with temporal changes. Similarly, studies on the overall microbiome of the mussel \emph{M. galloprovincialis} {[}\citeproc{ref-Peruzzo2026}{23}{]}, as well as on the gut microbiome {[}\citeproc{ref-Akter2023}{10}, \citeproc{ref-Palladino2023}{28}, \citeproc{ref-Wathsala2021}{30}{]}, also indicated temporal microbiome changes. In contrast, a study of the gill microbiome of the same species did not reveal any temporal changes, possibly due to the fewer sampling months included in that study {[}\citeproc{ref-Zardinoni2024}{31}{]}.
+
+Consistent with the Bray--Curtis dissimilarities calculated from OTU abundances, the taxonomic analysis also revealed a clear distinction between the gill microbiome of the mussel \emph{M. galloprovincialis} and the communities in the surrounding seawater and sediment. The high-rank microbial taxa detected in the surrounding seawater, as well as the higher proportion of \emph{Thermoplasmatota} Marine Group II during the colder period of the year, are typical of seawater microbial communities in the Adriatic Sea {[}\citeproc{ref-Korlevic2015}{90}, \citeproc{ref-Korlevic2022}{91}{]}. Similarly, the high-rank microbial taxa detected in the surrounding sediment have previously been found in surface sediments of the Adriatic Sea {[}\citeproc{ref-Markovski2022}{46}, \citeproc{ref-Ramljak2024}{92}{]}. At higher taxonomic ranks, the distinction between the gill microbiome and the microbial communities in the surrounding seawater and sediment was mainly due to the high proportion of \emph{Gammaproteobacteria} in the gill microbiome. The high proportion of taxa belonging to this class in the gill microbiome has also been observed in other studies focusing on the gills of the mussel \emph{M. galloprovincialis} {[}\citeproc{ref-Musella2020}{13}, \citeproc{ref-Zardinoni2024}{31}{]}. Because of the high proportion of \emph{Gammaproteobacteria} in the gill microbiome, no differences between the two locations, Lim Bay and Mali Ston Bay, or between sampling months were observed. However, when the analysis was performed at lower taxonomic ranks, such as family and genus, both resident taxa, present at both locations and throughout the study period, and transient taxa, specific to certain locations or months, were identified.
+
+Although members without known relatives within \emph{Endozoicomonadaceae} showed high variability in their proportion within the gill microbiome of \emph{M. galloprovincialis} between individuals, they were detected in all analysed mussels and exhibited minimal differences in proportion between mussels from different locations or months. This indicates that this group is resident in the gills of \emph{M. galloprovincialis}. The family \emph{Endozoicomonadaceae} is known to form associations with many marine benthic invertebrates, including bivalves, and with some fish {[}\citeproc{ref-Munoz-Martinez2026}{18}, \citeproc{ref-daSilva2025}{93}, \citeproc{ref-Schill2017}{94}{]}. Furthermore, members of this family have been detected in the gills of the blue mussel, \emph{Mytilus edulis}, a bivalve species closely related to \emph{M. galloprovincialis} {[}\citeproc{ref-Kijewski2011}{35}, \citeproc{ref-Schill2017}{94}{]}. Genomic analysis suggests that members of this family can rapidly adapt and transition between free-living and host-associated lifestyles, resulting in host--microbe relationships that can range from mutualistic to parasitic depending on the host species and ecological context {[}\citeproc{ref-daSilva2025}{93}{]}. The presence of this group in all analysed mussels in the present study suggests a mutualistic interaction between its members and \emph{M. galloprovincialis}. However, as this group consists of sequences without currently known relatives within this family, it is possible that novel \emph{Endozoicomonadaceae} taxa exhibiting temporal and spatial dynamics and showing different interactions with this host species will be described in the future. Indeed, in the present study, \emph{Endozoicomonas}, the type genus for this family {[}\citeproc{ref-Kurahashi2007}{95}{]}, was almost absent from the gill microbiome at both locations from July to November 2020. However, from January to May 2021, it comprised a substantial proportion of the microbiome in many individuals from both locations, indicating the transient nature of this taxon and possibly a different host--microbe interaction. Similarly, ``\emph{Candidatus} Endoecteinascidia'' comprised a substantial proportion of the gill microbiome in many mussels from both locations in July 2020, while in other months, only a few individuals' microbiomes contained a higher proportion of this group, indicating its transient nature. This group has been described as an endosymbiont of the ascidian \emph{Ecteinascidia turbinata} {[}\citeproc{ref-Moss2003}{96}{]}. Interestingly, genome analysis revealed an extreme reduction of the genome in this group and the presence of biosynthetic genes required for the production of ecteinascidin 743 (ET-743), a chemotherapeutic natural product thought to be pivotal for the interaction with this tunicate host {[}\citeproc{ref-Kehr2015}{97}--\citeproc{ref-Schofield2015}{99}{]}. These data suggest that members of this group form a mutualistic relationship with the host, so at present, it is difficult to explain the observed transient nature of ``\emph{Candidatus} Endoecteinascidia'' in the gill microbiome of \emph{M. galloprovincialis} observed in this study. It is possible that the host of this group is not the mussel but an ascidian biofouling species, and its detection is due to the proximity of the ascidians to the mussel gills. Indeed, ascidians are important members of the biofouling community on various aquaculture bivalve species, including \emph{M. galloprovincialis} {[}\citeproc{ref-Alvanou2024}{100}{]}, and their presence was also observed in aquaculture farms in the northern Adriatic Sea, including Lim Bay {[}\citeproc{ref-Majnaric2022}{101}{]}. In addition, ascidians in the Mediterranean Sea, including the genus \emph{Ecteinascidia}, have shown marked seasonality of growth on artificial plates deployed next to a bivalve aquaculture facility {[}\citeproc{ref-Casso2018}{102}{]}, which could explain the observed higher proportion of its endosymbiont ``\emph{Candidatus} Endoecteinascidia'' in the gill microbiome during the summer peak in July 2020 compared to other sampling months.
+
+Groups that were transient in nature and also differed between the two aquaculture locations, Lim Bay and Mali Ston Bay, both belonged to the family \emph{Vibrionaceae} and included \emph{Vibrio} as well as members without known relatives within \emph{Vibrionaceae}. Members of the family \emph{Vibrionaceae} are often found in the microbiome of various bivalve species, including \emph{M. galloprovincialis} {[}\citeproc{ref-Musella2020}{13}, \citeproc{ref-Vezzulli2018}{15}, \citeproc{ref-Munoz-Martinez2026}{18}, \citeproc{ref-delRio-Lavin2023}{21}, \citeproc{ref-Peruzzo2026}{23}{]}, forming relationships with their bivalve hosts that can range from mutualistic to neutral or parasitic {[}\citeproc{ref-Destoumieux-Garzon2020}{103}{]}. The preference of \emph{Vibrio} and members without known relatives within \emph{Vibrionaceae} for the period from September to November 2020, as well as for the aquaculture location in Lim Bay, observed in this study, suggests a neutral or parasitic interaction with \emph{M. galloprovincialis}. The higher proportion of \emph{Vibrionaceae} observed during this period is consistent with a study using culture-dependent methods focusing on the gills of \emph{M. galloprovincialis}, sampled during the same period and at the same aquaculture locations, which revealed a positive correlation between total \emph{Vibrio} counts and temperature (L. Perić, personal communication). This is not surprising, as many species of \emph{Vibrio} are known to thrive at higher temperatures {[}\citeproc{ref-Destoumieux-Garzon2020}{103}, \citeproc{ref-Sheikh2022}{104}{]}. The observed difference between Lim Bay and Mali Ston Bay could be due to distinct hydrological conditions and productivity at these locations, resulting in greater accumulation of organic matter and microbial growth in Lim Bay {[}\citeproc{ref-Bosak2013}{39}--\citeproc{ref-Skejic2015}{42}{]}. Indeed, all described \emph{Vibrio} spp. are obligate heterotrophs that rely on organic matter as a carbon source {[}\citeproc{ref-Zhang2018a}{105}{]}.
+
+\section{Conclusions}\label{conclusions}
+
+Because studies assessing the microbiome of bivalve species, including the mussel \emph{M. galloprovincialis}, have focused on gut tissue {[}\citeproc{ref-Salloum2025}{2}, \citeproc{ref-Akter2023}{10}, \citeproc{ref-Vezzulli2018}{15}, \citeproc{ref-delRio-Lavin2023}{21}, \citeproc{ref-Palladino2023}{28}, \citeproc{ref-Wathsala2021}{30}{]}, knowledge of the temporal and spatial dynamics of microbiomes from other body parts of this important aquaculture species remains limited. This study analysed a comprehensive set of gill microbiomes and compared them with microbial communities in the surrounding seawater and sediment to address this gap. Overall, the structure of the gill microbiome of \emph{M. galloprovincialis} at the OTU level was distinct from the microbial communities in the surrounding seawater and sediment, and did not differ between the aquaculture locations, Lim Bay and Mali Ston Bay. However, the structure of the gill microbiome varied between sampling months, suggesting temporal dynamics. Furthermore, taxonomic analysis revealed the presence of both resident and transient microbial taxa in the gill microbiome. Members without known relatives within \emph{Endozoicomonadaceae} were observed in the gill microbiome of mussels from both locations and throughout the study period, indicating their resident nature. In contrast, \emph{Endozoicomonas}, ``\emph{Candidatus} Endoecteinascidia'', \emph{Vibrio}, and members without known relatives within \emph{Vibrionaceae} appeared to be transient, as they were observed only in certain months. To clarify the nature of the interaction between these taxa and the \emph{M. galloprovincialis} host, future studies using methods that allow microbial cell tissue localisation and functional characterisation are required.
+\newpage
+
+\section{Acknowledgements}\label{acknowledgements}
+
+We thank the Department of Applied Ecology, University of Dubrovnik, and the Centre for Marine Research, Ruđer Bošković Institute, for providing access to laboratory facilities. We also thank the operator of the R/V Burin and the staff of Istrida d.~o. o. for their cooperation and assistance with sampling.
+
+\section{Author contributions}\label{author-contributions}
+
+MK and LP conceived and designed the study. LP managed the project and secured funding. DK, IVS, KO, VK, JB, SBČ, and VN conducted fieldwork and collected samples. MK and MM processed the samples and performed molecular analyses. MK conducted the bioinformatic analyses and statistical tests, and wrote the first draft of the manuscript. All authors reviewed and approved the final manuscript.
+
+\section{Funding}\label{funding}
+
+This study was funded by the Croatian Science Foundation through the BEST ADRIA project (project number IP-2019-04-1956) and the Young Researchers' Career Development Project---Training New Doctoral Students (project number DOK-2021-02-7567, awarded to LP for KO).
+
+\section{Data availability}\label{data-availability}
+
+Nucleotide sequences of the V4 region of the 16S rRNA gene obtained in this study have been deposited in the European Nucleotide Archive at EMBL-EBI under accession number PRJEB107277 (\url{https://www.ebi.ac.uk/ena/browser/view/PRJEB107277}). The detailed analysis procedure, including the R Markdown file for this article, is available on GitHub (\url{https://github.com/MicrobesRovinj/Korlevic_MusselMicrobiome_MicrobEcol_2026}) and Zenodo (\url{https://doi.org}).
+\newpage
+
+\section{References}\label{references}
+
+\phantomsection\label{refs}
+\begin{CSLReferences}{0}{0}
+\bibitem[\citeproctext]{ref-Apprill2017}
+\CSLLeftMargin{1. }%
+\CSLRightInline{Apprill A (2017) Marine animal microbiomes: toward understanding host--microbiome interactions in a changing ocean. Front Mar Sci 4:222. \url{https://doi.org/10.3389/fmars.2017.00222}}
+
+\bibitem[\citeproctext]{ref-Salloum2025}
+\CSLLeftMargin{2. }%
+\CSLRightInline{Salloum PM, Guo J, Scanes E (2025) Molluscan microbiomes: current research focus, knowledge gaps, and future directions. Molluscan Res 45:125--136. \url{https://doi.org/10.1080/13235818.2025.2464375}}
+
+\bibitem[\citeproctext]{ref-Petersen2018}
+\CSLLeftMargin{3. }%
+\CSLRightInline{Petersen JM, Osvatic J (2018) Microbiomes {{\emph{in natura}}}: importance of invertebrates in understanding the natural variety of animal--microbe interactions. mSystems 3:e00179-17. \url{https://doi.org/10.1128/msystems.00179-17}}
+
+\bibitem[\citeproctext]{ref-Margulis1991}
+\CSLLeftMargin{4. }%
+\CSLRightInline{Margulis L (1991) Symbiogenesis and symbionticism. In: Margulis L, Fester R (eds) Symbiosis as a source of evolutionary innovation: speciation and morphogenesis. The MIT Press, Cambridge, Massachusetts, pp 1--14}
+
+\bibitem[\citeproctext]{ref-Bordenstein2015}
+\CSLLeftMargin{5. }%
+\CSLRightInline{Bordenstein SR, Theis KR (2015) Host biology in light of the microbiome: ten principles of holobionts and hologenomes. PLOS Biol 13:e1002226. \url{https://doi.org/10.1371/journal.pbio.1002226}}
+
+\bibitem[\citeproctext]{ref-Pierce2018}
+\CSLLeftMargin{6. }%
+\CSLRightInline{Pierce ML, Ward JE (2018) Microbial ecology of the {Bivalvia}, with an emphasis on the family {Ostreidae}. J Shellfish Res 37:793--806. \url{https://doi.org/10.2983/035.037.0410}}
+
+\bibitem[\citeproctext]{ref-Unzueta-Martinez2022a}
+\CSLLeftMargin{7. }%
+\CSLRightInline{Unzueta-Martínez A, Welch H, Bowen JL (2022) Determining the composition of resident and transient members of the oyster microbiome. Front Microbiol 12:828692. \url{https://doi.org/10.3389/fmicb.2021.828692}}
+
+\bibitem[\citeproctext]{ref-Bright2010}
+\CSLLeftMargin{8. }%
+\CSLRightInline{Bright M, Bulgheresi S (2010) A complex journey: transmission of microbial symbionts. Nat Rev Microbiol 8:218--230. \url{https://doi.org/10.1038/nrmicro2262}}
+
+\bibitem[\citeproctext]{ref-Unzueta-Martinez2022}
+\CSLLeftMargin{9. }%
+\CSLRightInline{Unzueta-Martínez A, Scanes E, Parker LM, et al (2022) Microbiomes of the {Sydney Rock Oyster} are acquired through both vertical and horizontal transmission. Anim Microbiome 4:32. \url{https://doi.org/10.1186/s42523-022-00186-9}}
+
+\bibitem[\citeproctext]{ref-Akter2023}
+\CSLLeftMargin{10. }%
+\CSLRightInline{Akter S, Wos-Oxley ML, Catalano SR, et al (2023) Host species and environment shape the gut microbiota of cohabiting marine bivalves. Microb Ecol 86:1755--1772. \url{https://doi.org/10.1007/s00248-023-02192-z}}
+
+\bibitem[\citeproctext]{ref-Arfken2017}
+\CSLLeftMargin{11. }%
+\CSLRightInline{Arfken A, Song B, Bowman JS, Piehler M (2017) Denitrification potential of the eastern oyster microbiome using a {16S rRNA} gene based metabolic inference approach. PLoS One 12:e0185071. \url{https://doi.org/10.1371/journal.pone.0185071}}
+
+\bibitem[\citeproctext]{ref-Lokmer2016}
+\CSLLeftMargin{12. }%
+\CSLRightInline{Lokmer A, Kuenzel S, Baines JF, Wegner KM (2016) The role of tissue-specific microbiota in initial establishment success of {Pacific} oysters. Environ Microbiol 18:970--987. \url{https://doi.org/10.1111/1462-2920.13163}}
+
+\bibitem[\citeproctext]{ref-Musella2020}
+\CSLLeftMargin{13. }%
+\CSLRightInline{Musella M, Wathsala R, Tavella T, et al (2020) Tissue-scale microbiota of the {Mediterranean} mussel ({{\emph{Mytilus galloprovincialis}}}) and its relationship with the environment. Sci Total Environ 717:137209. \url{https://doi.org/10.1016/j.scitotenv.2020.137209}}
+
+\bibitem[\citeproctext]{ref-Pierce2019}
+\CSLLeftMargin{14. }%
+\CSLRightInline{Pierce ML, Ward JE (2019) Gut microbiomes of the eastern oyster ({{\emph{Crassostrea virginica}}}) and the blue mussel ({{\emph{Mytilus edulis}}}): temporal variation and the influence of marine aggregate-associated microbial communities. mSphere 4:e00730--19. \url{https://doi.org/10.1128/mSphere.00730-19}}
+
+\bibitem[\citeproctext]{ref-Vezzulli2018}
+\CSLLeftMargin{15. }%
+\CSLRightInline{Vezzulli L, Stagnaro L, Grande C, et al (2018) Comparative {16SrDNA} gene-based microbiota profiles of the {Pacific} oyster ({{\emph{Crassostrea}}}{{\emph{ gigas}}}) and the {Mediterranean} mussel ({{\emph{Mytilus}}}{{\emph{ galloprovincialis}}}) from a shellfish farm ({Ligurian Sea}, {Italy}). Microb Ecol 75:495--504. \url{https://doi.org/10.1007/s00248-017-1051-6}}
+
+\bibitem[\citeproctext]{ref-Dube2019}
+\CSLLeftMargin{16. }%
+\CSLRightInline{Dubé CE, Ky C-L, Planes S (2019) Microbiome of the black-lipped pearl oyster {{\emph{Pinctada margaritifera}}}, a multi-tissue description with functional profiling. Front Microbiol 10:1548. \url{https://doi.org/10.3389/fmicb.2019.01548}}
+
+\bibitem[\citeproctext]{ref-Gignoux-Wolfsohn2024}
+\CSLLeftMargin{17. }%
+\CSLRightInline{Gignoux-Wolfsohn S, Ruiz MG, Barron DP, et al (2024) Bivalve microbiomes are shaped by host species, size, parasite infection, and environment. PeerJ 12:e18082. \url{https://doi.org/10.7717/peerj.18082}}
+
+\bibitem[\citeproctext]{ref-Munoz-Martinez2026}
+\CSLLeftMargin{18. }%
+\CSLRightInline{Muñoz-Martínez M, Rey-Campos M, Aranguren R, et al (2026) Unveiling the specific microbiome of bivalves: insights into host microbial dynamics and pathogen interactions in a shared environment. Front Mar Sci 13:1731630. \url{https://doi.org/10.3389/fmars.2026.1731630}}
+
+\bibitem[\citeproctext]{ref-Nguyen2020}
+\CSLLeftMargin{19. }%
+\CSLRightInline{Nguyen VK, King WL, Mahbub KR, et al (2020) The {Sydney} rock oyster microbiota is influenced by location, season and genetics. Aquaculture 527:735472. \url{https://doi.org/10.1016/j.aquaculture.2020.735472}}
+
+\bibitem[\citeproctext]{ref-Pierce2016}
+\CSLLeftMargin{20. }%
+\CSLRightInline{Pierce ML, Ward JE, Holohan BA, et al (2016) The influence of site and season on the gut and pallial fluid microbial communities of the eastern oyster, {{\emph{Crassostrea virginica}}} ({Bivalvia}, {Ostreidae}): community-level physiological profiling and genetic structure. Hydrobiologia 765:97--113. \url{https://doi.org/10.1007/s10750-015-2405-z}}
+
+\bibitem[\citeproctext]{ref-delRio-Lavin2023}
+\CSLLeftMargin{21. }%
+\CSLRightInline{del Rio-Lavín A, Monchy S, Jiménez E, Pardo MÁ (2023) Gut microbiota fingerprinting as a potential tool for tracing the geographical origin of farmed mussels ({{\emph{Mytilus galloprovincialis}}}). PLoS One 18:e0290776. \url{https://doi.org/10.1371/journal.pone.0290776}}
+
+\bibitem[\citeproctext]{ref-Lokmer2016a}
+\CSLLeftMargin{22. }%
+\CSLRightInline{Lokmer A, Goedknegt MA, Thieltges DW, et al (2016) Spatial and temporal dynamics of {Pacific} oyster hemolymph microbiota across multiple scales. Front Microbiol 7:1367. \url{https://doi.org/10.3389/fmicb.2016.01367}}
+
+\bibitem[\citeproctext]{ref-Peruzzo2026}
+\CSLLeftMargin{23. }%
+\CSLRightInline{Peruzzo A, Dall'Occo A, Antonelli P, et al (2026) Microbiome convergence of translocated {{\emph{Mytilus galloprovincialis}}}: implications for ecological traceability and aquaculture resilience. Aquaculture 618:743796. \url{https://doi.org/10.1016/j.aquaculture.2026.743796}}
+
+\bibitem[\citeproctext]{ref-Sun2025}
+\CSLLeftMargin{24. }%
+\CSLRightInline{Sun L, Liu X, Zhou L, et al (2025) Shallow-water mussels ({{\emph{Mytilus galloprovincialis}}}) adapt to deep-sea environment through transcriptomic and metagenomic insights. Commun Biol 8:46. \url{https://doi.org/10.1038/s42003-024-07382-0}}
+
+\bibitem[\citeproctext]{ref-Lasa2019}
+\CSLLeftMargin{25. }%
+\CSLRightInline{Lasa A, di Cesare A, Tassistro G, et al (2019) Dynamics of the {Pacific} oyster pathobiota during mortality episodes in europe assessed by {16S rRNA} gene profiling and a new target enrichment next-generation sequencing strategy. Environ Microbiol 21:4548--4562. \url{https://doi.org/10.1111/1462-2920.14750}}
+
+\bibitem[\citeproctext]{ref-Auguste2024a}
+\CSLLeftMargin{26. }%
+\CSLRightInline{Auguste M, Leonessi M, Balbi T, et al (2024) Seasonal fluctuations of hemolymph microbiota and immune parameters in {{\emph{Mytilus}}}{{\emph{ galloprovincialis}}} farmed at {La Spezia}, {Italy}. Aquaculture 578:740028. \url{https://doi.org/10.1016/j.aquaculture.2023.740028}}
+
+\bibitem[\citeproctext]{ref-Bozcal2020}
+\CSLLeftMargin{27. }%
+\CSLRightInline{Bozcal E, Dagdeviren M (2020) Bacterial metagenome analysis of {{\emph{Mytilus}}}{{\emph{ galloprovincialis}}}~collected from {Istanbul} and {Izmir} coastal stations of {Turkey}. Environ Monit Assess 192:186. \url{https://doi.org/10.1007/s10661-020-8129-1}}
+
+\bibitem[\citeproctext]{ref-Palladino2023}
+\CSLLeftMargin{28. }%
+\CSLRightInline{Palladino G, Rampelli S, Scicchitano D, et al (2023) Seasonal dynamics of the microbiome--host response to pharmaceuticals and pesticides in {{\emph{Mytilus}}}{{\emph{ galloprovincialis}}} farmed in the northwestern {Adriatic Sea}. Sci Total Environ 887:163948. \url{https://doi.org/10.1016/j.scitotenv.2023.163948}}
+
+\bibitem[\citeproctext]{ref-Schoinas2023}
+\CSLLeftMargin{29. }%
+\CSLRightInline{Schoinas K, Konstantou V, Bompou E, et al (2023) Microbiome profile of the {Mediterranean} mussel ({{\emph{Mytilus galloprovincialis}}}) from northern {Aegean Sea} ({Greece}) culture areas, based on a {16S rRNA} next generation sequencing approach. Diversity 15:463. \url{https://doi.org/10.3390/d15030463}}
+
+\bibitem[\citeproctext]{ref-Wathsala2021}
+\CSLLeftMargin{30. }%
+\CSLRightInline{Wathsala RHGR, Musella M, Valbonesi P, et al (2021) Variability of metabolic, protective, antioxidant, and lysosomal gene transcriptional profiles and microbiota composition of {{\emph{Mytilus}}}{{\emph{ galloprovincialis}}} farmed in the {North Adriatic Sea} ({Italy}). Mar Pollut Bull 172:112847. \url{https://doi.org/10.1016/j.marpolbul.2021.112847}}
+
+\bibitem[\citeproctext]{ref-Zardinoni2024}
+\CSLLeftMargin{31. }%
+\CSLRightInline{Zardinoni G, Deb S, Ravi S, et al (2024) Difference in composition and functional analysis of bacterial communities between {{\emph{Mytilus}}}{{\emph{ galloprovincialis}}} gills and surrounding water in a brackish inshore bay, analyzed by {16S rDNA} multi-amplicon sequencing. Ann Microbiol 74:3. \url{https://doi.org/10.1186/s13213-024-01749-8}}
+
+\bibitem[\citeproctext]{ref-Gosling2003b}
+\CSLLeftMargin{32. }%
+\CSLRightInline{Gosling E (2003) \href{https://doi.org/10.1002/9780470995532.ch3}{Ecology of bivalves}. In: Bivalve molluscs: biology, ecology and culture. Blackwell, pp 44--86}
+
+\bibitem[\citeproctext]{ref-Gosling2003d}
+\CSLLeftMargin{33. }%
+\CSLRightInline{Gosling E (2003) \href{https://doi.org/10.1002/9780470995532.ch9}{Bivalve culture}. In: Bivalve molluscs: biology, ecology and culture. Blackwell, pp 284--332}
+
+\bibitem[\citeproctext]{ref-Hamer2012}
+\CSLLeftMargin{34. }%
+\CSLRightInline{Hamer B, Korlević M, Durmiši E, et al (2012) Nuclear marker {Me} 15/16 analyses of {{\emph{Mytilus galloprovincialis}}} populations along the eastern {Adriatic} coast. Cah Biol Mar 53:35--44. \url{https://doi.org/10.21411/CBM.A.E68905AA}}
+
+\bibitem[\citeproctext]{ref-Kijewski2011}
+\CSLLeftMargin{35. }%
+\CSLRightInline{Kijewski T, Śmietanka B, Zbawicka M, et al (2011) Distribution of {{\emph{Mytilus}}} taxa in {European} coastal areas as inferred from molecular markers. J Sea Res 65:224--234. \url{https://doi.org/10.1016/j.seares.2010.10.004}}
+
+\bibitem[\citeproctext]{ref-Wenne2022}
+\CSLLeftMargin{36. }%
+\CSLRightInline{Wenne R, Zbawicka M, Prądzińska A, et al (2022) Molecular genetic differentiation of native populations of {Mediterranean} blue mussels, {{\emph{Mytilus galloprovincialis}}} {Lamarck}, 1819, and the relationship with environmental variables. Eur Zool J 89:755--784. \url{https://doi.org/10.1080/24750263.2022.2086306}}
+
+\bibitem[\citeproctext]{ref-Gosling2003a}
+\CSLLeftMargin{37. }%
+\CSLRightInline{Gosling E (2003) \href{https://doi.org/10.1002/9780470995532.ch2}{Morphology of bivalves}. In: Bivalve molluscs: biology, ecology and culture. Blackwell, pp 7--43}
+
+\bibitem[\citeproctext]{ref-BratosCetinic2024}
+\CSLLeftMargin{38. }%
+\CSLRightInline{Bratoš Cetinić A (2024) Shellfisheries in {Croatia}: from manual collection to contemporary practices. Naše more 71:154--165. \url{https://doi.org/10.17818/NM/2024/3.8}}
+
+\bibitem[\citeproctext]{ref-Bosak2013}
+\CSLLeftMargin{39. }%
+\CSLRightInline{Bosak S, Ljubešić Z, Djakovac T, Viličić D (2009) Seasonal distribution of plankton diatoms in {Lim Bay}, northeastern {Adriatic Sea}. Acta Bot Croat 68:351--365}
+
+\bibitem[\citeproctext]{ref-Matek2024}
+\CSLLeftMargin{40. }%
+\CSLRightInline{Matek A, Ljubešić Z (2024) Primary production research in the {Adriatic Sea}---a review. Acta Adriat 65:205--222. \url{https://doi.org/10.32582/aa.65.2.1}}
+
+\bibitem[\citeproctext]{ref-Silovic2012a}
+\CSLLeftMargin{41. }%
+\CSLRightInline{Šilović T, Bosak S, Jakšić Ž, Fuks D (2012) Seasonal dynamics of the autotrophic community in the {Lim Bay} ({NE Adriatic Sea}). Acta Adriat 53:41--56}
+
+\bibitem[\citeproctext]{ref-Skejic2015}
+\CSLLeftMargin{42. }%
+\CSLRightInline{Skejić S, Vilibić I, Matijević S, et al (2015) Long-term regulating mechanisms of phytoplankton biomass in a traditional shellfish aquaculture area. Fresenius Environ Bull 24:3001--3013}
+
+\bibitem[\citeproctext]{ref-Zurga2024}
+\CSLLeftMargin{43. }%
+\CSLRightInline{Žurga P, Dubrović I, Kapetanović D, et al (2024) Performance of mussel {{\emph{Mytilus}}}{{\emph{ galloprovincialis}}} under variable environmental conditions and anthropogenic pressure: a survey of two distinct farming sites in the {Adriatic Sea}. Chemosphere 364:143156. \url{https://doi.org/10.1016/j.chemosphere.2024.143156}}
+
+\bibitem[\citeproctext]{ref-Orlic2025a}
+\CSLLeftMargin{44. }%
+\CSLRightInline{Orlić K, Kapetanović D, Kazazić S, et al (2025) Diversity, virulence and antibiotic resistance of {{\emph{Vibrio}}} {Harveyi} clade species associated with bivalve aquaculture within marine protected areas. Aquaculture 594:741392. \url{https://doi.org/10.1016/j.aquaculture.2024.741392}}
+
+\bibitem[\citeproctext]{ref-Massana1997}
+\CSLLeftMargin{45. }%
+\CSLRightInline{Massana R, Murray AE, Preston CM, DeLong EF (1997) Vertical distribution and phylogenetic characterization of marine planktonic {{\emph{Archaea}}} in the {Santa Barbara Channel}. Appl Environ Microbiol 63:50--56. \url{https://doi.org/10.1128/aem.63.1.50-56.1997}}
+
+\bibitem[\citeproctext]{ref-Markovski2022}
+\CSLLeftMargin{46. }%
+\CSLRightInline{Markovski M, Najdek M, Herndl GJ, Korlević M (2022) Compositional stability of sediment microbial communities during a seagrass meadow decline. Front Mar Sci 9:966070. \url{https://doi.org/10.3389/fmars.2022.966070}}
+
+\bibitem[\citeproctext]{ref-Pjevac2018}
+\CSLLeftMargin{47. }%
+\CSLRightInline{Pjevac P, Meier DV, Markert S, et al (2018) Metaproteogenomic profiling of microbial communities colonizing actively venting hydrothermal chimneys. Front Microbiol 9:680. \url{https://doi.org/10.3389/fmicb.2018.00680}}
+
+\bibitem[\citeproctext]{ref-Zhou1996}
+\CSLLeftMargin{48. }%
+\CSLRightInline{Zhou J, Bruns MA, Tiedje JM (1996) {DNA} recovery from soils of diverse composition. Appl Environ Microbiol 62:316--322. \url{https://doi.org/10.1128/aem.62.2.316-322.1996}}
+
+\bibitem[\citeproctext]{ref-Apprill2015}
+\CSLLeftMargin{49. }%
+\CSLRightInline{Apprill A, McNally S, Parsons R, Weber L (2015) Minor revision to {V4} region {SSU rRNA 806R} gene primer greatly increases detection of {SAR11} bacterioplankton. Aquat Microb Ecol 75:129--137. \url{https://doi.org/10.3354/ame01753}}
+
+\bibitem[\citeproctext]{ref-Caporaso2011}
+\CSLLeftMargin{50. }%
+\CSLRightInline{Caporaso JG, Lauber CL, Walters WA, et al (2011) Global patterns of {16S rRNA} diversity at a depth of millions of sequences per sample. Proc Natl Acad Sci U S A 108:4516--4522. \url{https://doi.org/10.1073/pnas.1000080107}}
+
+\bibitem[\citeproctext]{ref-Caporaso2012}
+\CSLLeftMargin{51. }%
+\CSLRightInline{Caporaso JG, Lauber CL, Walters WA, et al (2012) Ultra-high-throughput microbial community analysis on the {Illumina HiSeq} and {MiSeq} platforms. ISME J 6:1621--1624. \url{https://doi.org/10.1038/ismej.2012.8}}
+
+\bibitem[\citeproctext]{ref-Parada2016}
+\CSLLeftMargin{52. }%
+\CSLRightInline{Parada AE, Needham DM, Fuhrman JA (2016) Every base matters: assessing small subunit {rRNA} primers for marine microbiomes with mock communities, time series and global field samples. Environ Microbiol 18:1403--1414. \url{https://doi.org/10.1111/1462-2920.13023}}
+
+\bibitem[\citeproctext]{ref-Schloss2009}
+\CSLLeftMargin{53. }%
+\CSLRightInline{Schloss PD, Westcott SL, Ryabin T, et al (2009) Introducing mothur: open-source, platform-independent, community-supported software for describing and comparing microbial communities. Appl Environ Microbiol 75:7537--7541. \url{https://doi.org/10.1128/AEM.01541-09}}
+
+\bibitem[\citeproctext]{ref-Kozich2013}
+\CSLLeftMargin{54. }%
+\CSLRightInline{Kozich JJ, Westcott SL, Baxter NT, et al (2013) Development of a dual-index sequencing strategy and curation pipeline for analyzing amplicon sequence data on the {MiSeq Illumina} sequencing platform. Appl Environ Microbiol 79:5112--5120. \url{https://doi.org/10.1128/AEM.01043-13}}
+
+\bibitem[\citeproctext]{ref-Quast2013}
+\CSLLeftMargin{55. }%
+\CSLRightInline{Quast C, Pruesse E, Yilmaz P, et al (2013) The {SILVA} ribosomal {RNA} gene database project: improved data processing and web-based tools. Nucleic Acids Res 41:D590--D596. \url{https://doi.org/10.1093/nar/gks1219}}
+
+\bibitem[\citeproctext]{ref-Yilmaz2014}
+\CSLLeftMargin{56. }%
+\CSLRightInline{Yilmaz P, Parfrey LW, Yarza P, et al (2014) The {SILVA} and "{All-species Living Tree Project} ({LTP})" taxonomic frameworks. Nucleic Acids Res 42:D643--D648. \url{https://doi.org/10.1093/nar/gkt1209}}
+
+\bibitem[\citeproctext]{ref-R-base}
+\CSLLeftMargin{57. }%
+\CSLRightInline{R Core Team (2026) R: {a} language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria}
+
+\bibitem[\citeproctext]{ref-R-vegan}
+\CSLLeftMargin{58. }%
+\CSLRightInline{Oksanen J, Simpson GL, Blanchet FG, et al (2025) {vegan}: {community} ecology package}
+
+\bibitem[\citeproctext]{ref-R-tidyverse}
+\CSLLeftMargin{59. }%
+\CSLRightInline{Wickham H (2023) {tidyverse}: {easily} install and load the tidyverse}
+
+\bibitem[\citeproctext]{ref-tidyverse2019}
+\CSLLeftMargin{60. }%
+\CSLRightInline{Wickham H, Averick M, Bryan J, et al (2019) Welcome to the {tidyverse}. J Open Source Softw 4:1686. \url{https://doi.org/10.21105/joss.01686}}
+
+\bibitem[\citeproctext]{ref-R-bookdown}
+\CSLLeftMargin{61. }%
+\CSLRightInline{Xie Y (2025) {bookdown}: {authoring} books and technical documents with {R} {Markdown}}
+
+\bibitem[\citeproctext]{ref-R-cld}
+\CSLLeftMargin{62. }%
+\CSLRightInline{Gegzna V (2025) {cld}: {create} {Compact Letter Display} (CLD) for statistical comparisons}
+
+\bibitem[\citeproctext]{ref-R-cowplot}
+\CSLLeftMargin{63. }%
+\CSLRightInline{Wilke CO (2024) {cowplot}: {streamlined} plot theme and plot annotations for ggplot2}
+
+\bibitem[\citeproctext]{ref-R-ggforce}
+\CSLLeftMargin{64. }%
+\CSLRightInline{Pedersen TL (2024) {ggforce}: {accelerating} ggplot2}
+
+\bibitem[\citeproctext]{ref-R-ggh4x}
+\CSLLeftMargin{65. }%
+\CSLRightInline{van den Brand T (2024) ggh4x: {hacks} for ggplot2}
+
+\bibitem[\citeproctext]{ref-R-ggnewscale}
+\CSLLeftMargin{66. }%
+\CSLRightInline{Campitelli E (2025) {ggnewscale}: {multiple} fill and colour scales in ggplot2}
+
+\bibitem[\citeproctext]{ref-R-gtable}
+\CSLLeftMargin{67. }%
+\CSLRightInline{Wickham H, Pedersen TL (2024) {gtable}: {arrange} grobs in tables}
+
+\bibitem[\citeproctext]{ref-R-kableExtra}
+\CSLLeftMargin{68. }%
+\CSLRightInline{Zhu H (2024) kableExtra: {construct} complex table with kable and pipe syntax}
+
+\bibitem[\citeproctext]{ref-R-knitr}
+\CSLLeftMargin{69. }%
+\CSLRightInline{Xie Y (2025) {knitr}: {a} general-purpose package for dynamic report generation in {R}}
+
+\bibitem[\citeproctext]{ref-R-lazyeval}
+\CSLLeftMargin{70. }%
+\CSLRightInline{Wickham H (2019) \href{https://doi.org/10.32614/CRAN.package.lazyeval}{{lazyeval}: {lazy} (non-standard) evaluation}}
+
+\bibitem[\citeproctext]{ref-R-legendry}
+\CSLLeftMargin{71. }%
+\CSLRightInline{van den Brand T (2025) {legendry}: {extended} legends and axes for ggplot2}
+
+\bibitem[\citeproctext]{ref-R-plyr}
+\CSLLeftMargin{72. }%
+\CSLRightInline{Wickham H (2023) {plyr}: {tools} for splitting, applying and combining data}
+
+\bibitem[\citeproctext]{ref-R-RColorBrewer}
+\CSLLeftMargin{73. }%
+\CSLRightInline{Neuwirth E (2022) \href{https://doi.org/10.32614/CRAN.package.RColorBrewer}{RColorBrewer: {ColorBrewer} palettes}}
+
+\bibitem[\citeproctext]{ref-R-rmarkdown}
+\CSLLeftMargin{74. }%
+\CSLRightInline{Allaire J, Xie Y, Dervieux C, et al (2024) {rmarkdown}: {dynamic} documents for {R}}
+
+\bibitem[\citeproctext]{ref-R-tinytex}
+\CSLLeftMargin{75. }%
+\CSLRightInline{Xie Y (2026) {tinytex}: {helper} functions to install and maintain {TeX Live}, and compile LaTeX documents}
+
+\bibitem[\citeproctext]{ref-R-vctrs}
+\CSLLeftMargin{76. }%
+\CSLRightInline{Wickham H, Henry L, Vaughan D (2023) {vctrs}: {vector} helpers}
+
+\bibitem[\citeproctext]{ref-bookdown2016}
+\CSLLeftMargin{77. }%
+\CSLRightInline{Xie Y (2016) {bookdown}: {authoring} books and technical documents with {R} {Markdown}. Chapman; Hall/CRC, Boca Raton, Florida}
+
+\bibitem[\citeproctext]{ref-knitr2015}
+\CSLLeftMargin{78. }%
+\CSLRightInline{Xie Y (2015) Dynamic documents with {R} and knitr, 2nd ed. Chapman; Hall/CRC, Boca Raton, Florida}
+
+\bibitem[\citeproctext]{ref-knitr2014}
+\CSLLeftMargin{79. }%
+\CSLRightInline{Xie Y (2014) {knitr}: {a} comprehensive tool for reproducible research in {R}. In: Stodden V, Leisch F, Peng RD (eds) {Implementing reproducible computational research}. Chapman; Hall/CRC}
+
+\bibitem[\citeproctext]{ref-plyr2011}
+\CSLLeftMargin{80. }%
+\CSLRightInline{Wickham H (2011) The split-apply-combine strategy for data analysis. J Stat Softw 40:1--29}
+
+\bibitem[\citeproctext]{ref-rmarkdown2018}
+\CSLLeftMargin{81. }%
+\CSLRightInline{Xie Y, Allaire JJ, Grolemund G (2018) R {Markdown}: {the} definitive guide. Chapman; Hall/CRC, Boca Raton, Florida}
+
+\bibitem[\citeproctext]{ref-rmarkdown2020}
+\CSLLeftMargin{82. }%
+\CSLRightInline{Xie Y, Dervieux C, Riederer E (2020) R {Markdown} cookbook. Chapman; Hall/CRC, Boca Raton, Florida}
+
+\bibitem[\citeproctext]{ref-tinytex2019}
+\CSLLeftMargin{83. }%
+\CSLRightInline{Xie Y (2019) TinyTeX: {a} lightweight, cross-platform, and easy-to-maintain LaTeX distribution based on {TeX Live}. TUGboat 40:30--32}
+
+\bibitem[\citeproctext]{ref-Jost2006}
+\CSLLeftMargin{84. }%
+\CSLRightInline{Jost L (2006) Entropy and diversity. Oikos 113:363--375. \url{https://doi.org/10.1111/j.2006.0030-1299.14714.x}}
+
+\bibitem[\citeproctext]{ref-Borcard2018}
+\CSLLeftMargin{85. }%
+\CSLRightInline{Borcard D, Gillet F, Legendre P (2018) \href{https://doi.org/10.1007/978-3-319-71404-2}{Numerical ecology with {R}}, 2nd ed. Springer}
+
+\bibitem[\citeproctext]{ref-Legendre2012}
+\CSLLeftMargin{86. }%
+\CSLRightInline{Legendre P, Legendre L (2012) Numerical ecology, 3rd ed. Elsevier, Amsterdam}
+
+\bibitem[\citeproctext]{ref-Korlevic2021a}
+\CSLLeftMargin{87. }%
+\CSLRightInline{Korlević M, Markovski M, Zhao Z, et al (2021) Selective {DNA} and protein isolation from marine macrophyte surfaces. Front Microbiol 12:665999. \url{https://doi.org/10.3389/fmicb.2021.665999}}
+
+\bibitem[\citeproctext]{ref-Schloss2016}
+\CSLLeftMargin{88. }%
+\CSLRightInline{Schloss PD, Jenior ML, Koumpouras CC, et al (2016) Sequencing {16S rRNA} gene fragments using the {PacBio SMRT DNA} sequencing system. PeerJ 4:e1869. \url{https://doi.org/10.7717/peerj.1869}}
+
+\bibitem[\citeproctext]{ref-Gosling2003c}
+\CSLLeftMargin{89. }%
+\CSLRightInline{Gosling E (2003) \href{https://doi.org/10.1002/9780470995532.ch4}{How bivalves feed}. In: Bivalve molluscs: biology, ecology and culture. Blackwell, pp 87--130}
+
+\bibitem[\citeproctext]{ref-Korlevic2015}
+\CSLLeftMargin{90. }%
+\CSLRightInline{Korlević M, Pop Ristova P, Garić R, et al (2015) Bacterial diversity in the {South Adriatic Sea} during a strong, deep winter convection year. Appl Environ Microbiol 81:1715--1726. \url{https://doi.org/10.1128/AEM.03410-14}}
+
+\bibitem[\citeproctext]{ref-Korlevic2022}
+\CSLLeftMargin{91. }%
+\CSLRightInline{Korlević M, Markovski M, Herndl GJ, Najdek M (2022) Temporal variation in the prokaryotic community of a nearshore marine environment. Sci Rep 12:16859. \url{https://doi.org/10.1038/s41598-022-20954-6}}
+
+\bibitem[\citeproctext]{ref-Ramljak2024}
+\CSLLeftMargin{92. }%
+\CSLRightInline{Ramljak A, Žučko J, Lučić M, et al (2024) Microbial communities as indicators of marine ecosystem health: insights from coastal sediments in the eastern {Adriatic Sea}. Mar Pollut Bull 205:116649. \url{https://doi.org/10.1016/j.marpolbul.2024.116649}}
+
+\bibitem[\citeproctext]{ref-daSilva2025}
+\CSLLeftMargin{93. }%
+\CSLRightInline{da Silva DMG, Costa R, Keller-Costa T (2025) A genomic view of the bacterial family {{\emph{Endozoicomonadaceae}}} in marine symbioses. Commun Biol 8:1418. \url{https://doi.org/10.1038/s42003-025-08828-9}}
+
+\bibitem[\citeproctext]{ref-Schill2017}
+\CSLLeftMargin{94. }%
+\CSLRightInline{Schill WB, Iwanowicz D, Adams C (2017) {\emph{Endozoicomonas}} dominates the gill and intestinal content microbiomes of {{\emph{Mytilus}}}{\emph{ edulis}} from {Barnegat Bay}, {New Jersey}. J Shellfish Res 36:391--401. \url{https://doi.org/10.2983/035.036.0212}}
+
+\bibitem[\citeproctext]{ref-Kurahashi2007}
+\CSLLeftMargin{95. }%
+\CSLRightInline{Kurahashi M, Yokota A (2007) {\emph{Endozoicomonas elysicola}} gen. nov., sp. nov., a \(\gamma\)-proteobacterium isolated from the sea slug {{\emph{Elysia}}}{\emph{ ornata}}. Syst Appl Microbiol 30:202--206. \url{https://doi.org/10.1016/j.syapm.2006.07.003}}
+
+\bibitem[\citeproctext]{ref-Moss2003}
+\CSLLeftMargin{96. }%
+\CSLRightInline{Moss C, Green DH, Pérez B, et al (2003) Intracellular bacteria associated with the ascidian {{\emph{Ecteinascidia turbinata}}}: phylogenetic and in situ hybridisation analysis. Mar Biol 143:99--110. \url{https://doi.org/10.1007/s00227-003-1060-5}}
+
+\bibitem[\citeproctext]{ref-Kehr2015}
+\CSLLeftMargin{97. }%
+\CSLRightInline{Kehr J-C, Dittmann E (2015) Protective tunicate endosymbiont with extreme genome reduction. Environ Microbiol 17:3430--3432. \url{https://doi.org/10.1111/1462-2920.12941}}
+
+\bibitem[\citeproctext]{ref-Rath2011}
+\CSLLeftMargin{98. }%
+\CSLRightInline{Rath CM, Janto B, Earl J, et al (2011) Meta-omic characterization of the marine invertebrate microbial consortium that produces the chemotherapeutic natural product {ET-743}. ACS Chem Biol 6:1244--1256. \url{https://doi.org/10.1021/cb200244t}}
+
+\bibitem[\citeproctext]{ref-Schofield2015}
+\CSLLeftMargin{99. }%
+\CSLRightInline{Schofield MM, Jain S, Porat D, et al (2015) Identification and analysis of the bacterial endosymbiont specialized for production of the chemotherapeutic natural product {ET-743}. Environ Microbiol 17:3964--3975. \url{https://doi.org/10.1111/1462-2920.12908}}
+
+\bibitem[\citeproctext]{ref-Alvanou2024}
+\CSLLeftMargin{100. }%
+\CSLRightInline{Alvanou MV, Feidantsis K, Papadopoulos DK, et al (2024) Major ascidian species with negative impacts on bivalve aquaculture: current knowledge and future research aims. Open Geosci 16:20220660. \url{https://doi.org/10.1515/geo-2022-0660}}
+
+\bibitem[\citeproctext]{ref-Majnaric2022}
+\CSLLeftMargin{101. }%
+\CSLRightInline{Majnarić N, Pavičić-Hamer D, Jaklin A, Hamer B (2022) Susceptibility of invasive tunicates {{\emph{Clavelina}}}{{\emph{ oblonga}}} to reduced seawater salinities. Aquac Rep 27:101402. \url{https://doi.org/10.1016/j.aqrep.2022.101402}}
+
+\bibitem[\citeproctext]{ref-Casso2018}
+\CSLLeftMargin{102. }%
+\CSLRightInline{Casso M, Navarro M, Ordóñez V, et al (2018) Seasonal patterns of settlement and growth of introduced and native ascidians in bivalve cultures in the {Ebro} delta ({NE Iberian Peninsula}). Reg Stud Mar Sci 23:12--22. \url{https://doi.org/10.1016/j.rsma.2017.11.002}}
+
+\bibitem[\citeproctext]{ref-Destoumieux-Garzon2020}
+\CSLLeftMargin{103. }%
+\CSLRightInline{Destoumieux-Garzón D, Canesi L, Oyanedel D, et al (2020) {\emph{Vibrio}}--bivalve interactions in health and disease. Environ Microbiol 22:4323--4341. \url{https://doi.org/10.1111/1462-2920.15055}}
+
+\bibitem[\citeproctext]{ref-Sheikh2022}
+\CSLLeftMargin{104. }%
+\CSLRightInline{Sheikh HI, Najiah M, Fadhlina A, et al (2022) Temperature upshift mostly but not always enhances the growth of {{\emph{Vibrio}}} species: a systematic review. Front Mar Sci 9:959830. \url{https://doi.org/10.3389/fmars.2022.959830}}
+
+\bibitem[\citeproctext]{ref-Zhang2018a}
+\CSLLeftMargin{105. }%
+\CSLRightInline{Zhang X, Lin H, Wang X, Austin B (2018) Significance of {{\emph{Vibrio}}} species in the marine organic carbon cycle---a review. Sci China Earth Sci 61:1357--1368. \url{https://doi.org/10.1007/s11430-017-9229-x}}
+
+\end{CSLReferences}
+
+\newpage
+
+\end{document}

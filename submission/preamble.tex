@@ -1,0 +1,158 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Font
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Set font encoding to T1 (8-bit encoding, 256 glyphs) 
+% (improved text handling, especially with non-English
+% languages and text containing special characters)
+\usepackage[T1]{fontenc}
+
+% Set font to URW Nimbus Roman
+% (Times New Roman alternative)
+\usepackage{mathptmx}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Typsetting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include the package containing commands for page
+% orientation
+\usepackage{pdflscape}
+% Create a new custom command for starting a landscape block
+\newcommand{\blandscape}{\begin{landscape}}
+% Create a new custom command for ending a landscape block
+\newcommand{\elandscape}{\end{landscape}}
+
+% Include package providing fine-tuned typographic
+% enhancements
+\usepackage{microtype}
+
+% Suppress hyphenation
+\usepackage[none]{hyphenat}
+
+% Include package for setting spacing between lines
+\usepackage{setspace}
+% Set line spacing
+\doublespacing
+
+% Indent first paragraph of each section (including
+% chapters)
+\usepackage{indentfirst}
+
+% Set vertical space between paragraphs
+\setlength{\parskip}{1em}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Line numbers
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include package for line numbering
+\usepackage{lineno}
+% Set font style and size of line numbers
+\renewcommand{\linenumberfont}{\normalfont\tiny}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Lists
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include package to customise the appearance of itemised
+% lists
+\usepackage{enumitem}
+
+% Remove extra vertical space that is added above and below
+% itemize and enumerate lists
+\setlist{nosep}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Figures and tables
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include package enhancing figure and table placement
+% (provides "H" placement specifier forcing the float to
+% appear exactly where it is defined)
+\usepackage{float}
+
+% Include package used to create tables with cells spanning
+% multiple rows
+\usepackage{multirow}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Captions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Define the separator between the label and the caption
+% text and make the label bold
+\usepackage[labelsep=space, labelfont=bf]{caption}
+% Set caption text to be justified
+\captionsetup{justification=justified}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Uniform Resource Locators (URLs)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include the package to handle URLs
+\usepackage{url}
+
+% Redefine the commands that specify where line breaks can
+% occur in URLs (\UrlBreaks has a lower penalty, i.e. it is
+% more easily chosen, and does not break within a repeating
+% sequence)
+\renewcommand\UrlBreaks{\do\/\do\:\do\.\do\-}
+\renewcommand\UrlBigBreaks{\do\/\do\:\do\.\do\-}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Referencing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include the package xr (external references) to allow
+% referencing labels from another file
+\usepackage{xr}
+% Specify the name of the file used for additional
+% referencing and define the prefix for the labels
+% from the external document
+\externaldocument[supp-]{supplementary}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Measurement units
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include the package that facilitates consistent formatting
+% of scientific units and numbers
+\usepackage{siunitx}
+% Define unit \molar as moles per cubic decimetre
+\DeclareSIUnit\molar{\mole\per\cubic\deci\metre}
+% Define unit \Molar as small caps "M"
+\DeclareSIUnit\Molar{\textsc{m}}
+% Define unit \cells as the text "cells"
+\DeclareSIUnit\cells{\text{cells}}
+% Define unit \litre as lower case "l"
+\DeclareSIUnit\litre{l}
+% Define unit \vV as v/v
+\DeclareSIUnit{\vV}{v/v}
+% Define unit \wW as w/w
+\DeclareSIUnit{\wW}{w/w}
+% Define unit \bp as bp
+\DeclareSIUnit{\bp}{bp}
+% Define unit \U as U
+\DeclareSIUnit{\U}{U}
+% Remove the space between the number and the percentage
+% sign
+\catcode`\%=12\relax
+\DeclareSIUnit[number-unit-product = ]\percent{%}
+\catcode`\%=14\relax
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Chemical formulas
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include package for typesetting chemical formulas
+\usepackage{chemformula}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Bookmarks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Include package to create hyperlinks, including PDF bookmarks, and
+% open all levels of the bookmarks by default
+\usepackage[bookmarksopenlevel=\maxdimen]{hyperref}
+
